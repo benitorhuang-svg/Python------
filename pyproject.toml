@@ -5,7 +5,6 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "fmz>=2.2.0",
     "numpy>=2.4.2",
     "ta-lib>=0.6.8",
 ]

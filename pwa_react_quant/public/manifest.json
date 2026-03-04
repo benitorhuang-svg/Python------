@@ -1,0 +1,22 @@
+{
+    "name": "量化交易實戰教學",
+    "short_name": "量化教學",
+    "description": "Python 量化交易互動教學平台 — 在瀏覽器中學習策略原理、即時執行回測代碼",
+    "start_url": "/index.html",
+    "display": "standalone",
+    "background_color": "#0a0e17",
+    "theme_color": "#0a0e17",
+    "orientation": "any",
+    "lang": "zh-TW",
+    "icons": [
+        {
+            "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>",
+            "sizes": "any",
+            "type": "image/svg+xml"
+        }
+    ],
+    "categories": [
+        "education",
+        "finance"
+    ]
+}

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quant_Book | 量化交易實戰平台</title>
+
+  <!-- Start loading Pyodide early -->
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.27.5/full/pyodide.js"></script>
+
+  <style>
+    body {
+      background: #0a0e1a;
+      margin: 0;
+    }
+
+    #root:empty::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: #0a0e1a;
+      z-index: 1000;
+    }
+
+    #root:empty::before {
+      content: "🚀 正在初始化量化交易環境...";
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      color: #22d3ee;
+      font-family: 'Noto Sans TC', sans-serif;
+      font-weight: 500;
+      font-size: 1rem;
+      letter-spacing: 0.1em;
+      z-index: 1001;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
+</html>
