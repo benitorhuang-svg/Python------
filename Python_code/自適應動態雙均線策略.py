@@ -1,0 +1,70 @@
+# 回测配置 
+'''backtest
+start: 2019-01-01 00:00:00
+end: 2021-01-01 00:00:00
+period: 1d
+basePeriod: 1d
+balance: 10000
+slipPoint: 2
+exchanges: [{"eid":"Futures_CTP","currency":"FUTURES"}]
+'''
+
+# 导入模块 
+from fmz import *
+import talib                                        # talib库需要手动安装
+import numpy as np
+
+mp = 0                                              # 定义一个全局变量，用于控制虚拟持仓
+
+# 把K线列表转换成收盘价列表，用于计算AMA的值
+def get_close(r):
+    arr = []
+    for i in r:
+        arr.append(i['Close'])
+    return arr
+    
+# 判断两根AMA交叉
+def is_cross(arr1, arr2):
+    if arr1[-2] < arr2[-2] and arr1[-1] > arr2[-1]:
+        return True
+    
+# 程序主函数
+def onTick():
+    _C(exchange.SetContractType, "c000") 	        # 订阅期货品种
+    bar_arr = _C(exchange.GetRecords)  		        # 获取K线列表
+    if len(bar_arr) < 100:  					    # 如果K线列表长度过小于就直接返回
+        return
+    close_arr = get_close(bar_arr)  		        # 把K线列表转换成收盘价列表
+    np_close_arr = np.array(close_arr) 		        # 把列表转换为numpy.array
+    ama1 = talib.KAMA(np_close_arr, 10).tolist()	# 计算短期AMA
+    ama2 = talib.KAMA(np_close_arr, 100).tolist()	# 计算长期AMA
+    last_close = close_arr[-1]  				    # 获取最新价格
+    global mp  								        # 全局变量，用于控制虚拟持仓
+    if mp == 1 and is_cross(ama2, ama1):
+        exchange.SetDirection("closebuy")  	        # 设置交易方向和类型
+        exchange.Sell(last_close - 1, 1)  	        # 平多单
+        mp = 0  								    # 设置虚拟持仓的值，即空仓
+    if mp == -1 and is_cross(ama1, ama2):
+        exchange.SetDirection("closesell")	        # 设置交易方向和类型
+        exchange.Buy(last_close, 1)  		        # 平空单
+        mp = 0  								    # 设置虚拟持仓的值，即空仓
+    if mp == 0 and is_cross(ama1, ama2):
+        exchange.SetDirection("buy")  		        # 设置交易方向和类型
+        exchange.Buy(last_close, 1)  		        # 开多单
+        mp = 1  								    # 设置虚拟持仓的值，即有多单
+    if mp == 0 and is_cross(ama2, ama1):
+        exchange.SetDirection("sell")  		        # 设置交易方向和类型
+        exchange.Sell(last_close - 1, 1)  	        # 开空单
+        mp = -1  								    # 设置虚拟持仓的值，即有空单
+        
+def main():
+    while True:
+        onTick()
+        Sleep(1000)
+
+# 回测结果 
+task = VCtx(__doc__)                        	    # 调用VCtx()函数
+try:
+    main()                                  		# 调用策略入口函数
+except:
+    task.Show()                      	        	# 回测结束输出图表
