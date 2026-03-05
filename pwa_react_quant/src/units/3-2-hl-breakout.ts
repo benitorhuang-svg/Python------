@@ -10,17 +10,54 @@ export const unitHlBreakout: UnitDef = {
     needsData: true,
 
     theory: `
-    <p><strong>高低點突破 (HL Breakout)</strong> 是一種非常直觀的突破交易法。它的假設非常簡單：如果價格能突破過去一段時間的「阻力」或「支撐」，那麼後續將會有一波強大的動能。</p>
+    <p><strong>高低點突破 (HL Breakout)</strong> 是一種非常直觀且符合人性的趨勢交易法。它的假設非常簡單：<strong>如果價格能突破過去一段時間的「阻力天花板」，那麼上方必定海闊天空，後續將會有一波強大的動能。</strong></p>
+
+    <div style="margin: 24px 0; background: var(--bg-hover); border-radius: var(--radius-lg); padding: 20px; text-align: center; border: 1px solid var(--border-subtle);">
+      <svg viewBox="0 0 450 200" style="width: 100%; max-width: 500px; height: auto; display: inline-block;">
+        <g stroke="rgba(255,255,255,0.05)" stroke-width="1">
+          <line x1="20%" y1="0" x2="20%" y2="100%" />
+          <line x1="40%" y1="0" x2="40%" y2="100%" />
+          <line x1="60%" y1="0" x2="60%" y2="100%" />
+          <line x1="80%" y1="0" x2="80%" y2="100%" />
+        </g>
+        
+        <!-- Lookback Window -->
+        <rect x="0" y="40" width="250" height="120" fill="rgba(148, 163, 184, 0.1)" stroke="#64748b" stroke-width="1" stroke-dasharray="2,2" />
+        <text x="125" y="30" fill="#94a3b8" font-size="10" text-anchor="middle">過去 N 日的觀察窗 (Lookback Window)</text>
+
+        <!-- Resistance Line -->
+        <line x1="0" y1="40" x2="450" y2="40" stroke="#06b6d4" stroke-width="2" />
+        <text x="440" y="35" fill="#06b6d4" font-size="10" text-anchor="end">N 日最高點 (突破買入線)</text>
+
+        <!-- Support Line -->
+        <line x1="0" y1="160" x2="450" y2="160" stroke="#ef4444" stroke-width="2" />
+        <text x="440" y="155" fill="#ef4444" font-size="10" text-anchor="end">N 日最低點 (跌破停損/做空線)</text>
+
+        <!-- Price Path -->
+        <path d="M 0 100 Q 40 50 80 120 T 160 60 T 230 140 T 260 80 T 290 20 T 360 10 T 450 -10" fill="none" stroke="#f59e0b" stroke-width="2.5" />
+        
+        <!-- Buy Signal -->
+        <circle cx="280" cy="40" r="6" fill="#facc15" stroke="#0f172a" stroke-width="2" />
+        <line x1="280" y1="40" x2="280" y2="80" stroke="#facc15" stroke-width="1" stroke-dasharray="2,2" />
+        <text x="280" y="95" fill="#facc15" font-size="11" font-weight="bold" text-anchor="middle" style="text-shadow: 0 1px 3px rgba(0,0,0,0.8);">突破前高！(做多買入)</text>
+      </svg>
+    </div>
     
-    <p>常見的參數設定是看過去 20 日（一個月）的極端價格：</p>
+    <h3>交易邏輯設計</h3>
+    <p>最常見的參數是看過去 20 日（約一個月的交易日）或 55 日：</p>
     <ul>
-      <li><strong>看漲突破</strong>：價格 > 過去 N 日內的最高價 => 買入。</li>
-      <li><strong>看跌突破</strong>：價格 < 過去 N 日內的最低價 => 賣出或平倉。</li>
+      <li><strong style="color: #06b6d4;">看漲突破</strong>：當今日收盤價 <strong>&gt;</strong> 過去 N 日內的最高價，代表市場消化了所有過去一個月的賣壓，此時順勢買入。</li>
+      <li><strong style="color: #ef4444;">看跌突破 / 停損出局</strong>：當今日收盤價 <strong>&lt;</strong> 過去 N 日內的最低價，代表支撐崩盤，強烈賣出或反手做空。</li>
     </ul>
 
+    <div class="info-callout">
+      <strong>📌 順勢交易的鐵律：高買高賣</strong><br>
+      散戶喜歡「低買高賣（抄底逃頂）」，但量化趨勢高手通常是「高買更高賣」。敢於在創下新高時進場，是因為動能剛剛被點燃。理查．丹尼斯著名的「海龜交易法則」其核心基礎就是高低點突破。
+    </div>
+
     <div class="warning-callout">
-      <strong>⚠️ 缺點：</strong><br>
-      在高波動且橫盤的市場中，價格可能會頻繁「假突破」邊界後隨即回落，造成頻繁停損。
+      <strong>⚠️ 缺點與摩擦成本：假突破</strong><br>
+      在高波動且呈現箱型橫盤的市場中，莊家往往會刻意製造「假突破」（洗盤）。價格剛刺破 20 日新高，吸引突破派買單進場後，隔天立刻暴跌回跌破 20 日新低。導致策略左右挨打，來回停損。
     </div>
   `,
 

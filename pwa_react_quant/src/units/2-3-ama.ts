@@ -11,17 +11,66 @@ export const unitAma: UnitDef = {
 
   theory: `
     <p><strong>自適應均線 (Adaptive Moving Average, AMA)</strong> 由 Perry Kaufman 提出，旨在決解決傳統均線在「滯後性」與「靈敏度」之間的兩難。</p>
-    
-    <p>它的核心秘密在於<strong>效率比 (Efficiency Ratio, ER)</strong>：</p>
+
+    <div style="margin: 24px 0; background: var(--bg-hover); border-radius: var(--radius-lg); padding: 20px; text-align: center; border: 1px solid var(--border-subtle);">
+      <svg viewBox="0 0 450 180" style="width: 100%; max-width: 500px; height: auto; display: inline-block;">
+        <g stroke="rgba(255,255,255,0.05)" stroke-width="1">
+          <line x1="10%" y1="0" x2="10%" y2="100%" />
+          <line x1="30%" y1="0" x2="30%" y2="100%" />
+          <line x1="50%" y1="0" x2="50%" y2="100%" />
+          <line x1="70%" y1="0" x2="70%" y2="100%" />
+          <line x1="90%" y1="0" x2="90%" y2="100%" />
+        </g>
+        
+        <!-- Price Line Oscillating then trending -->
+        <path d="M 0 100 Q 30 60 60 110 T 120 70 T 180 120 T 240 80 T 280 140 Q 320 80 360 40 T 450 10" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-dasharray="2,2" />
+        
+        <!-- Standard Fast MA (Cyan) - Gets whipped around -->
+        <path d="M 0 100 Q 35 65 65 110 T 125 75 T 185 120 T 245 85 T 285 135 Q 325 85 365 45 T 450 15" fill="none" stroke="rgba(6, 182, 212, 0.4)" stroke-width="1.5" />
+        
+        <!-- AMA Line (Purple) - Flattens out during chop, catches the trend -->
+        <path d="M 0 95 Q 120 100 240 100 Q 280 100 320 80 Q 360 50 450 20" fill="none" stroke="#a855f7" stroke-width="3" />
+        
+        <!-- Annotations -->
+        <!-- Chop Zone -->
+        <rect x="20" y="55" width="230" height="90" fill="none" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,4" rx="4" />
+        <text x="135" y="45" fill="#f59e0b" font-size="11" font-weight="bold" text-anchor="middle">震盪期 ER≈0</text>
+        <text x="135" y="115" fill="#a855f7" font-size="10" font-weight="bold" text-anchor="middle">AMA 呈現水平（鈍化防守）</text>
+
+        <!-- Trend Zone -->
+        <rect x="290" y="20" width="140" height="110" fill="none" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="4,4" rx="4" />
+        <text x="360" y="145" fill="#22c55e" font-size="11" font-weight="bold" text-anchor="middle">爆發期 ER≈1</text>
+        <text x="360" y="65" fill="#a855f7" font-size="10" font-weight="bold" text-anchor="middle" transform="rotate(-20 360 65)">AMA 迅速跟隨（轉為敏捷）</text>
+
+        <!-- Legend -->
+        <rect x="10" y="160" width="12" height="2" fill="rgba(255,255,255,0.3)" />
+        <text x="26" y="164" fill="#cbd5e1" font-size="10">真實價格</text>
+        
+        <rect x="90" y="160" width="12" height="2" fill="rgba(6, 182, 212, 0.4)" />
+        <text x="106" y="164" fill="#cbd5e1" font-size="10">傳統快均線 (易被雙巴)</text>
+        
+        <rect x="220" y="159" width="12" height="4" fill="#a855f7" />
+        <text x="236" y="164" fill="#cbd5e1" font-size="10">自適應均線 AMA</text>
+      </svg>
+    </div>
+
+    <h3>核心秘密：效率比 (Efficiency Ratio, ER)</h3>
+    <p>AMA 之所以聰明，是因為它在計算平均前，會先計算當下的<strong>市場效率</strong>。公式為：</p>
+    <div class="formula-box">
+      ER = | 總位移 (起點到終點直線距離) | / 總路徑長 (每日波動加總)
+    </div>
     <ul>
-      <li><strong>ER 趨近 1</strong>：價格直線變動，趨勢極強。AMA 會變得非常靈敏（趨近短週期均線）。</li>
-      <li><strong>ER 趨近 0</strong>：價格上下震盪，噪聲極多。AMA 會變得非常遲鈍（趨近長週期均線），避免頻繁交易。</li>
+      <li><strong style="color: #22c55e;">單邊趨勢市 (ER 趨近 1)</strong>：價格直線飆升，位移等於路徑長度。系統會認知市場效率極高，自動將平滑係數切換至<strong>最快參數</strong>（如 2 日均線），緊咬趨勢不放。</li>
+      <li><strong style="color: #f59e0b;">橫盤猴市 (ER 趨近 0)</strong>：價格今天漲明天跌，來回震盪，位移極小但路徑很長。系統認知市場效率極低，自動將平滑係數切換至<strong>最慢參數</strong>（如 30 日均線），變成一條死魚防守線，過濾掉所有假突破訊號。</li>
     </ul>
 
     <div class="info-callout">
       <strong>📌 為什麼叫「自適應」？</strong><br>
-      它能自動偵測市場的波動強度。當市場橫盤時，AMA 會橫向發展幾乎不動；當市場啟動爆發時，它會迅速跟上價格。
+      你不需要再手動猜測現在該用 5日 還是 20日 均線。AMA 自己就是一個「變形蟲」，它會根據市場波動率自己轉換形態，是許多高階量化機構非常喜歡的平滑過濾器。
     </div>
+    
+    <h3>實戰用法</h3>
+    <p>AMA 由於平滑得非常漂亮，通常不需要再搭配第二條均線找交叉，而是直接當成<strong>動態支撐/壓力線</strong>來使用：站上 AMA 且 AMA 拐頭向上就做多，跌破則做空。</p>
   `,
 
   defaultCode: `import json

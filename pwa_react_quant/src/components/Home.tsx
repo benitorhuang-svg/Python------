@@ -19,19 +19,19 @@ export default function Home() {
                     backdropFilter: 'blur(10px)',
                     letterSpacing: '0.02em'
                 }}>
-                    <Zap size={12} fill="currentColor" /> Quant_Lab Interactive v3.0
+                    <Zap size={12} fill="currentColor" /> 全前端 Python 量化實驗室
                 </div>
 
                 <h1>
-                    大數據與 <span className="highlight">量化策略</span>
+                    基於 PWA 技術的 <span className="highlight">量化實戰</span>
                     <br />
-                    實戰教學平台
+                    互動教學平台
                 </h1>
 
                 <p className="hero-subtitle">
-                    專為實戰打造的互動式量化 Lab。透過瀏覽器直接驅動 Python 核心，
+                    無需配置任何伺服器與本地環境。透過 WebAssembly 直接驅動 Python 運算核心，
                     <br />
-                    將交易理論轉化為可視化的回測數據，開啟你的程式交易之路。
+                    學習理論、動態調整參數，並即時體驗專業級的回測視覺化數據分析。
                 </p>
 
                 <div className="hero-stats">
@@ -47,8 +47,8 @@ export default function Home() {
                         <div className="hero-stat-icon" style={{ color: 'var(--brand-primary)' }}>
                             <Activity size={24} />
                         </div>
-                        <div className="hero-stat-number">20+</div>
-                        <div className="hero-stat-label">回測範例</div>
+                        <div className="hero-stat-number">20</div>
+                        <div className="hero-stat-label">經典量化策略</div>
                     </div>
 
                     <div className="hero-stat">
@@ -56,7 +56,7 @@ export default function Home() {
                             <TrendingUp size={24} />
                         </div>
                         <div className="hero-stat-number">100%</div>
-                        <div className="hero-stat-label">Python 雲端驅動</div>
+                        <div className="hero-stat-label">WebAssembly 驅動</div>
                     </div>
                 </div>
 

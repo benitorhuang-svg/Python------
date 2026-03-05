@@ -10,16 +10,51 @@ export const unitFundamentals: UnitDef = {
     needsData: true,
 
     theory: `
-    <p><strong>基本面量化 (Fundamental Quant)</strong> 是大中型機構最常用的方法。它結合了：</p>
-    
+    <p><strong>基本面量化 (Fundamental Quant) / 因子投資</strong> 是全球大中型避險基金（如 AQR、橋水）最核心的武器。它不再把自己侷限於 K線圖，而是把公司的財務體質與市場的價格動能結合，實現「<strong>買好資產的便宜價位，並在剛起漲時上車</strong>」。</p>
+
+    <div style="margin: 24px 0; background: var(--bg-hover); border-radius: var(--radius-lg); padding: 20px; text-align: center; border: 1px solid var(--border-subtle);">
+      <svg viewBox="0 0 450 200" style="width: 100%; max-width: 500px; height: auto; display: inline-block;">
+        
+        <!-- Venn Diagram Circles -->
+        <!-- Fundamental Circle -->
+        <circle cx="170" cy="100" r="80" fill="rgba(6, 182, 212, 0.15)" stroke="#06b6d4" stroke-width="2" />
+        <text x="130" y="80" fill="#06b6d4" font-size="12" font-weight="bold" text-anchor="middle">基本面因子</text>
+        <text x="130" y="100" fill="#94a3b8" font-size="10" text-anchor="middle">低本益比 (PE)</text>
+        <text x="130" y="115" fill="#94a3b8" font-size="10" text-anchor="middle">高 ROE, 營收增長</text>
+        <text x="130" y="130" fill="#94a3b8" font-size="9" text-anchor="middle">(過濾器 / 防禦盾牌)</text>
+
+        <!-- Technical Circle -->
+        <circle cx="280" cy="100" r="80" fill="rgba(245, 158, 11, 0.15)" stroke="#f59e0b" stroke-width="2" />
+        <text x="320" y="80" fill="#f59e0b" font-size="12" font-weight="bold" text-anchor="middle">技術面動能</text>
+        <text x="320" y="100" fill="#94a3b8" font-size="10" text-anchor="middle">均線黃金交叉</text>
+        <text x="320" y="115" fill="#94a3b8" font-size="10" text-anchor="middle">帶量突破新高</text>
+        <text x="320" y="130" fill="#94a3b8" font-size="9" text-anchor="middle">(觸發器 / 攻擊長矛)</text>
+
+        <!-- Intersection (Holy Grail) -->
+        <!-- Using a clip-path to highlight the intersection -->
+        <clipPath id="circle-clip">
+          <circle cx="170" cy="100" r="80" />
+        </clipPath>
+        <circle cx="280" cy="100" r="80" fill="rgba(34, 197, 94, 0.3)" clip-path="url(#circle-clip)" />
+        
+        <text x="225" y="95" fill="#22c55e" font-size="12" font-weight="bold" text-anchor="middle" style="text-shadow: 0 1px 2px rgba(0,0,0,0.8);">雙因子</text>
+        <text x="225" y="115" fill="#22c55e" font-size="12" font-weight="bold" text-anchor="middle" style="text-shadow: 0 1px 2px rgba(0,0,0,0.8);">共振點</text>
+        
+        <path d="M 225 150 L 225 180" fill="none" stroke="#22c55e" stroke-width="2" stroke-dasharray="2,2" />
+        <rect x="175" y="180" width="100" height="20" fill="#22c55e" rx="4" />
+        <text x="225" y="193" fill="#0f172a" font-size="11" font-weight="bold" text-anchor="middle">果斷大倉買進</text>
+      </svg>
+    </div>
+
+    <h3>雙重濾網：防禦與攻擊</h3>
     <ul>
-      <li><strong>價值過濾 (價值)</strong>：只在 PE (本益比) 低於一定標準，或 ROE (權益報酬率) 高於一定標準時才考慮買入。</li>
-      <li><strong>技術觸發 (動能)</strong>：當符合基本面條件後，再使用 MA 交叉或突破來尋找最優進場時機。</li>
+      <li><strong style="color: #06b6d4;">第一層過濾 (價值盾牌)</strong>：每天透過財報 API，掃描全市場，把「太貴的 (高 PE)」、「不賺錢的」、「容易倒閉的」公司全部踢除出選股池。只留下體質強健的「潛力名單」。</li>
+      <li><strong style="color: #f59e0b;">第二層觸發 (動能長矛)</strong>：好公司不代表馬上會漲（這叫價值陷阱）。我們派出技術指標（例如 20MA 突破）掛載在這些名單上。當某天這隻潛力股突然爆量起漲，產生黃金交叉時，代表主力大戶進場了，系統才會果斷開槍。</li>
     </ul>
 
     <div class="info-callout">
-      <strong>📌 為什麼結合更強？</strong><br>
-      只看技術面容易遇到「垃圾股」崩盤；只看基本面容易遇到「價值陷阱」（股價很便宜但一直跌）。兩者結合能顯著降低投資組合的風險。
+      <strong>📌 為什麼結合更強？ (左側 + 右側交易)</strong><br>
+      只看技術面追高，很容易遇到「炒作垃圾股」最後暴跌下市（缺乏基本面防守）；只看基本面抄底，很容易買在半山腰後被套牢好幾年（缺乏資金面確認）。兩者結合完美解決彼此的盲點，大幅提升量化組合的夏普比率（Sharpe Ratio）。
     </div>
   `,
 

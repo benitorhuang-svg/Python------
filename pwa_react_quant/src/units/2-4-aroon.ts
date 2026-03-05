@@ -11,17 +11,67 @@ export const unitAroon: UnitDef = {
 
   theory: `
     <p><strong>阿隆指標 (Aroon Indicator)</strong> 是由 Tushar Chande 開發的。它的名字在梵文中代表「黎明的光芒」。</p>
+
+    <div style="margin: 24px 0; background: var(--bg-hover); border-radius: var(--radius-lg); padding: 20px; text-align: center; border: 1px solid var(--border-subtle);">
+      <svg viewBox="0 0 450 180" style="width: 100%; max-width: 500px; height: auto; display: inline-block;">
+        <g stroke="rgba(255,255,255,0.05)" stroke-width="1">
+          <line x1="10%" y1="0" x2="10%" y2="100%" />
+          <line x1="30%" y1="0" x2="30%" y2="100%" />
+          <line x1="50%" y1="0" x2="50%" y2="100%" />
+          <line x1="70%" y1="0" x2="70%" y2="100%" />
+          <line x1="90%" y1="0" x2="90%" y2="100%" />
+        </g>
+        
+        <!-- Axis -->
+        <line x1="0" y1="140" x2="450" y2="140" stroke="#64748b" stroke-width="1" stroke-dasharray="4,4" />
+        <text x="440" y="135" fill="#64748b" font-size="9" text-anchor="end">0分底線</text>
+        <line x1="0" y1="20" x2="450" y2="20" stroke="#64748b" stroke-width="1" stroke-dasharray="4,4" />
+        <text x="440" y="15" fill="#64748b" font-size="9" text-anchor="end">100分頂線</text>
+        
+        <!-- Aroon Down Line - Red -->
+        <path d="M 0 30 Q 80 80 120 130 T 180 140 T 260 80 T 360 40 T 450 20" fill="none" stroke="#ef4444" stroke-width="2.5" />
+        
+        <!-- Aroon Up Line - Green -->
+        <path d="M 0 130 Q 80 100 120 40 T 180 20 T 260 60 T 360 100 T 450 140" fill="none" stroke="#22c55e" stroke-width="2.5" />
+        
+        <!-- Trend Start Area -->
+        <circle cx="120" cy="85" r="5" fill="#facc15" stroke="#0f172a" stroke-width="2" />
+        <rect x="150" y="40" width="130" height="90" fill="none" stroke="#facc15" stroke-width="1" stroke-dasharray="4,4" rx="4" />
+        <text x="215" y="80" fill="#facc15" font-size="11" font-weight="bold" text-anchor="middle">多頭黎明 (向上大交叉)</text>
+        <text x="215" y="100" fill="#22c55e" font-size="10" font-weight="bold" text-anchor="middle">Up 頂撞 100 分天花板</text>
+        <text x="215" y="115" fill="#ef4444" font-size="10" font-weight="bold" text-anchor="middle">Down 躺平 0 分地板</text>
+
+        <!-- Down Trend Start -->
+        <circle cx="340" cy="70" r="5" fill="#06b6d4" stroke="#0f172a" stroke-width="2" />
+        <text x="340" y="55" fill="#06b6d4" font-size="11" font-weight="bold" text-anchor="middle">空頭反撲 (向下交叉)</text>
+
+        <!-- Legend -->
+        <rect x="10" y="160" width="12" height="4" fill="#22c55e" />
+        <text x="26" y="166" fill="#cbd5e1" font-size="10">Aroon Up (距離最高點的天數得分)</text>
+        
+        <rect x="230" y="160" width="12" height="4" fill="#ef4444" />
+        <text x="246" y="166" fill="#cbd5e1" font-size="10">Aroon Down (距離最低點的天數得分)</text>
+      </svg>
+    </div>
     
-    <p>它與一般的動能指標不同，它不看價格變動的幅度，而是看<strong>「時間」</strong>：</p>
+    <h3>獨特的「時間」維度</h3>
+    <p>大部分的技術指標都在計算「價格到底漲/跌了多少錢」。唯獨阿隆指標，它完全不在乎價格漲跌的絕對空間，它只問一個問題：<strong>「距離上一次創出新高（或新低），已經過了幾天了？」</strong></p>
     <ul>
-      <li><strong>Aroon Up</strong>：衡量自週期內最高點以來的時間。</li>
-      <li><strong>Aroon Down</strong>：衡量自週期內最低點以來的時間。</li>
+      <li><strong style="color: #22c55e;">Aroon Up (多頭分數)</strong>：如果今天剛好創下 25 天內的新高，Aroon Up 就是 100 分。如果最高點發生在 25 天前，它就是 0 分。</li>
+      <li><strong style="color: #ef4444;">Aroon Down (空頭分數)</strong>：同理，如果今天剛好創下 25 天內的新低，Aroon Down 就是 100 分。</li>
+    </ul>
+
+    <h3>實戰交易訊號</h3>
+    <p>兩條線的競速遊戲，就像多空雙方的搶椅子大賽：</p>
+    <ul>
+      <li><strong>極限狀態：</strong>當 Aroon Up 達到 100，且 Aroon Down 降到極低（例如 0），代表買方正在瘋狂創新高，賣方完全失憶。這是強烈趨勢的證明。</li>
+      <li><strong>黃金交叉 (買入點)：</strong>當 Aroon Up 向上穿越 Aroon Down 時。這表示最近「創新高」的頻率，已經正式擊敗了「創新低」的頻率。趨勢正在黎明破曉。</li>
+      <li><strong>死亡交叉 (賣出點)：</strong>當 Aroon Down 向上穿越 Aroon Up 時。表示空頭開始更頻繁地擊穿下限。</li>
     </ul>
 
     <div class="info-callout">
-      <strong>📌 核心訊號：</strong><br>
-      1. 當 Aroon Up 在 100 附近時，代表趨勢剛創下近期新高。<br>
-      2. 當 Up 穿過 Down 時（Aroon 交叉），通常預示著新趨勢的黎明。
+      <strong>📌 為什麼阿隆指標常被用來作開關？</strong><br>
+      在盤整期，創新高和創新低的時間會交替出現，導致 Up 和 Down 兩條線都在 50 分左右徘徊糾纏。一旦其中一條線如火箭般飆升黏住天花板，就是趨勢發動的明牌。
     </div>
   `,
 

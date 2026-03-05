@@ -10,18 +10,60 @@ export const unitRBreaker: UnitDef = {
     needsData: true,
 
     theory: `
-    <p><strong>R-Breaker</strong> 是一個結合了「趨勢突破」與「反轉回馬槍」的混和交易策略。它由 Richard Saidenberg 開發，曾多次進入全美頂尖策略排行榜。</p>
-    
-    <p>它每天會計算出 6 個關鍵價位：</p>
+    <p><strong>R-Breaker</strong> 是一個非常經典且完整的日內分析框架。由 Richard Saidenberg 開發，曾長年霸榜 Future Truth 全美頂尖十年交易策略排行榜。它巧妙地結合了「趨勢突破」與「反轉回馬槍」兩種交易概念。</p>
+
+    <div style="margin: 24px 0; background: var(--bg-hover); border-radius: var(--radius-lg); padding: 20px; text-align: center; border: 1px solid var(--border-subtle);">
+      <svg viewBox="0 0 450 250" style="width: 100%; max-width: 500px; height: auto; display: inline-block;">
+        <g stroke="rgba(255,255,255,0.05)" stroke-width="1">
+          <line x1="20%" y1="0" x2="20%" y2="100%" />
+          <line x1="40%" y1="0" x2="40%" y2="100%" />
+          <line x1="60%" y1="0" x2="60%" y2="100%" />
+          <line x1="80%" y1="0" x2="80%" y2="100%" />
+        </g>
+        
+        <!-- Center Pivot Line -->
+        <line x1="0" y1="125" x2="450" y2="125" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,4" />
+        <text x="440" y="120" fill="#94a3b8" font-size="10" text-anchor="end">Pivot 基平線 (H+L+C)/3</text>
+
+        <!-- Resistance Lines -->
+        <rect x="0" y="55" width="450" height="30" fill="rgba(34, 197, 94, 0.05)" />
+        <line x1="0" y1="85" x2="450" y2="85" stroke="#06b6d4" stroke-width="1.5" />
+        <text x="440" y="80" fill="#06b6d4" font-size="9" text-anchor="end">阻力2 / 賣出線 (R2)</text>
+        
+        <line x1="0" y1="55" x2="450" y2="55" stroke="#22c55e" stroke-width="2" />
+        <text x="440" y="50" fill="#22c55e" font-size="10" font-weight="bold" text-anchor="end">極限突破 / 做多買入線 (R3)</text>
+
+        <!-- Support Lines -->
+        <rect x="0" y="165" width="450" height="30" fill="rgba(239, 68, 68, 0.05)" />
+        <line x1="0" y1="165" x2="450" y2="165" stroke="#8b5cf6" stroke-width="1.5" />
+        <text x="440" y="160" fill="#8b5cf6" font-size="9" text-anchor="end">支撐2 / 買入線 (S2)</text>
+
+        <line x1="0" y1="195" x2="450" y2="195" stroke="#ef4444" stroke-width="2" />
+        <text x="440" y="210" fill="#ef4444" font-size="10" font-weight="bold" text-anchor="end">極限跌破 / 放空賣出線 (S3)</text>
+
+        <!-- Price Play 1: Reversal (Fake breakout then dump) -->
+        <path d="M 0 110 Q 50 60 100 70 T 150 140 T 200 120" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="2,2" />
+        <circle cx="95" cy="72" r="5" fill="#f59e0b" />
+        <text x="95" y="60" fill="#f59e0b" font-size="9" text-anchor="middle">假突破 R2 後遇阻反轉放空</text>
+        
+        <!-- Price Play 2: True Breakout -->
+        <path d="M 200 120 Q 250 100 280 40 T 360 10 T 450 -10" fill="none" stroke="#22c55e" stroke-width="3" />
+        <circle cx="270" cy="55" r="6" fill="#facc15" stroke="#0f172a" stroke-width="2" />
+        <text x="270" y="42" fill="#facc15" font-size="11" font-weight="bold" text-anchor="middle" style="text-shadow: 0 1px 3px rgba(0,0,0,0.8);">真突破 R3 追多！</text>
+      </svg>
+    </div>
+
+    <h3>六大關卡陣列</h3>
+    <p>R-Breaker 是基於昨日的價格（最高、最低、收盤）來為今天的市場畫出 6 條楚河漢界。它的架構類似著名的 Pivot Point (樞軸點)：</p>
     <ul>
-      <li><strong>突破買入價 (R3)</strong>：高點突破極限。</li>
-      <li><strong>反轉點位 (R2 / S2)</strong>：強阻力與強支撐，適合觀察反向動能。</li>
-      <li><strong>突破賣出價 (S3)</strong>：低點跌破極限。</li>
+      <li><strong>Pivot (樞紐基線)</strong>：昨日的高、低、收，加上各項權重算出的一條磁鐵中心線。</li>
+      <li><strong style="color: #06b6d4;">觀察緩衝區 (R1, R2 / S1, S2)</strong>：用來判斷市場是否陷入區間震盪。如果是，則在高阻力 (R2) 處放空，低支撐 (S2) 處做多。（逆勢反轉策略）</li>
+      <li><strong style="color: #22c55e;">極端突破區 (R3 / S3)</strong>：代表今天發生了超級黑天鵝或大利多，買盤/賣盤徹底失控，此時放棄所有逆勢思考，全力順勢追擊。（順勢突破策略）</li>
     </ul>
 
     <div class="info-callout">
-      <strong>📌 核心精神：</strong><br>
-      如果價格突破 R3（最上方紅線），則強烈買入捕捉趨勢爆發。如果價格雖然進入 R2 但隨即回落，則可能是假突破，進場做反轉。
+      <strong>📌 攻守兼備的特性：</strong><br>
+      大多數量化策略只有「順勢突破」或是只有「逆勢抄底」。R-Breaker 巧妙地把它們融合在同一天的不同價位上，這讓它在單邊牛市和震盪無聊的猴市中，都能找到生存的空間。
     </div>
   `,
 

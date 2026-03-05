@@ -10,20 +10,56 @@ export const unitBias: UnitDef = {
   needsData: true,
 
   theory: `
-    <p><strong>乖離率 (BIAS)</strong> 是一個衡量收盤價與移動平均線距離的指標。它顯示了當前市場的超買或超賣程度。</p>
+    <p><strong>乖離率 (BIAS)</strong> 是一個衡量收盤價與移動平均線距離的相對指標。它生動地展現了市場群眾的情緒何時陷入「過度樂觀」或「過度悲觀」。</p>
+
+    <div style="margin: 24px 0; background: var(--bg-hover); border-radius: var(--radius-lg); padding: 20px; text-align: center; border: 1px solid var(--border-subtle);">
+      <svg viewBox="0 0 450 200" style="width: 100%; max-width: 500px; height: auto; display: inline-block;">
+        <g stroke="rgba(255,255,255,0.05)" stroke-width="1">
+          <line x1="20%" y1="0" x2="20%" y2="100%" />
+          <line x1="40%" y1="0" x2="40%" y2="100%" />
+          <line x1="60%" y1="0" x2="60%" y2="100%" />
+          <line x1="80%" y1="0" x2="80%" y2="100%" />
+        </g>
+        
+        <!-- Moving Average (Center Gravity) -->
+        <path d="M 0 100 Q 150 120 450 100" fill="none" stroke="#facc15" stroke-width="3" />
+        <text x="440" y="95" fill="#facc15" font-size="11" font-weight="bold" text-anchor="end">移動平均線 (市場引力中心)</text>
+
+        <!-- Price Path (Rubber band snapping) -->
+        <path d="M 0 100 Q 50 20 100 80 T 200 180 T 300 80 T 380 40 T 450 100" fill="none" stroke="#cbd5e1" stroke-width="2" />
+        
+        <!-- Overbought Area (Positive BIAS) -->
+        <line x1="65" y1="105" x2="65" y2="45" stroke="#ef4444" stroke-width="2" stroke-dasharray="2,2" />
+        <text x="65" y="35" fill="#ef4444" font-size="10" font-weight="bold" text-anchor="middle">正乖離過大 (+BIAS)</text>
+        <circle cx="65" cy="45" r="4" fill="#ef4444" />
+        <text x="65" y="22" fill="#ef4444" font-size="9" text-anchor="middle">漲多必跌 (賣出)</text>
+
+        <line x1="380" y1="102" x2="380" y2="40" stroke="#ef4444" stroke-width="2" stroke-dasharray="2,2" />
+        <circle cx="380" cy="40" r="4" fill="#ef4444" />
+
+        <!-- Oversold Area (Negative BIAS) -->
+        <line x1="200" y1="108" x2="200" y2="180" stroke="#22c55e" stroke-width="2" stroke-dasharray="2,2" />
+        <text x="200" y="195" fill="#22c55e" font-size="10" font-weight="bold" text-anchor="middle">負乖離過大 (-BIAS)</text>
+        <circle cx="200" cy="180" r="4" fill="#22c55e" />
+        <text x="200" y="210" fill="#22c55e" font-size="9" text-anchor="middle">跌深必彈 (買進)</text>
+      </svg>
+    </div>
+    
+    <h3>均值回歸的物理學：小狗與主人的繩子</h3>
+    <p>德國股神安德烈·科斯托蘭尼曾提出著名的「遛狗理論」：經濟與股市的關係就像主人牽著小狗，小狗（價格）有時會跑到前面，有時會落後，但最終都會回到主人（均線/價值）身邊。</p>
     
     <div class="formula-box">
       BIAS = ( (當前價格 - MA) / MA ) × 100%
     </div>
 
     <ul>
-      <li><strong>正乖離大</strong>：代表價格漲得太快，離均線太遠，可能會回檔。</li>
-      <li><strong>負乖離大</strong>：代表價格跌得太重，離均線太遠，可能會反彈。</li>
+      <li><strong style="color: #ef4444;">正乖離極大 (+BIAS)</strong>：代表上漲速度實在太快，像一根被拉到極限的橡皮筋。多頭已經透支了未來的買盤，即使趨勢沒結束，也隨時可能因為獲利了結賣壓而出現「回檔」。此處切忌追高，甚至可以短空。</li>
+      <li><strong style="color: #22c55e;">負乖離極大 (-BIAS)</strong>：代表市場陷入非理性的恐慌拋售。此時下方的賣壓已如強弩之末，橡皮筋隨時會暴力反彈。「跌深就是最大的利多」，量化系統會在此精準執行「逆勢抄底」。</li>
     </ul>
 
     <div class="info-callout">
-      <strong>📌 交易提示：</strong><br>
-      我們利用「回歸均值」的特性，在負乖離觸及極端值時買入，並在回歸到均線（乖離率回到 0 附近）或正乖離過大時賣出。
+      <strong>📌 交易提示：摩擦成本與勝率配置</strong><br>
+      乖離率通常被配置為「逆勢抄底」工具。在實戰中，我們通常設定當負乖離率深達某個百分比（例如 -5%）時分批買入，並在乖離率收斂回 0 樞紐時（或 +1%）快速獲利平倉了結，不貪求成為大波段。
     </div>
   `,
 

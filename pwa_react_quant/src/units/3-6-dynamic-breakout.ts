@@ -10,19 +10,60 @@ export const unitDynamicBreakout: UnitDef = {
   needsData: true,
 
   theory: `
-    <p><strong>動態波幅突破 (Dynamic Volatility Breakout)</strong> 是一種「隨機應變」的突破系統。它不像固定百分比或固定點數系統，它是基於<strong>平均真理範圍 (ATR)</strong> 來調整突破閾值。</p>
+    <p><strong>動態波幅突破 (Dynamic Volatility Breakout)</strong> 是一種「隨機應變」的智能突破系統。它拋棄了死板的固定點數，改用<strong>真實波動幅度 (ATR)</strong> 來自動調整突破軌道的寬度。</p>
+
+    <div style="margin: 24px 0; background: var(--bg-hover); border-radius: var(--radius-lg); padding: 20px; text-align: center; border: 1px solid var(--border-subtle);">
+      <svg viewBox="0 0 450 200" style="width: 100%; max-width: 500px; height: auto; display: inline-block;">
+        <g stroke="rgba(255,255,255,0.05)" stroke-width="1">
+          <line x1="20%" y1="0" x2="20%" y2="100%" />
+          <line x1="40%" y1="0" x2="40%" y2="100%" />
+          <line x1="60%" y1="0" x2="60%" y2="100%" />
+          <line x1="80%" y1="0" x2="80%" y2="100%" />
+        </g>
+        
+        <!-- Period 1: Low Volatility (Narrow Channel) -->
+        <rect x="0" y="80" width="150" height="40" fill="rgba(6, 182, 212, 0.05)" />
+        <path d="M 0 80 Q 75 90 150 80" fill="none" stroke="#06b6d4" stroke-width="2" stroke-dasharray="4,4" />
+        <path d="M 0 120 Q 75 110 150 120" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,4" />
+        
+        <path d="M 0 100 Q 30 110 60 90 T 130 95 T 150 100" fill="none" stroke="#cbd5e1" stroke-width="1.5" />
+        <text x="75" y="145" fill="#94a3b8" font-size="10" text-anchor="middle">低波動期 (ATR極小)</text>
+        <line x1="75" y1="80" x2="75" y2="120" stroke="#06b6d4" stroke-width="1" />
+        <text x="78" y="105" fill="#06b6d4" font-size="9" text-anchor="start">窄軌道</text>
+
+        <!-- Divider -->
+        <line x1="150" y1="20" x2="150" y2="180" stroke="#64748b" stroke-width="1" stroke-dasharray="2,2" />
+
+        <!-- Period 2: High Volatility (Wide Channel) -->
+        <rect x="150" y="40" width="300" height="120" fill="rgba(6, 182, 212, 0.05)" />
+        <path d="M 150 40 Q 300 30 450 40" fill="none" stroke="#06b6d4" stroke-width="2" stroke-dasharray="4,4" />
+        <path d="M 150 160 Q 300 170 450 160" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,4" />
+        
+        <path d="M 150 100 Q 180 140 210 60 T 270 150 T 320 60 T 380 110" fill="none" stroke="#cbd5e1" stroke-width="1.5" />
+        <text x="250" y="185" fill="#94a3b8" font-size="10" text-anchor="middle">高波動震盪期 (ATR極大)</text>
+        <line x1="250" y1="40" x2="250" y2="160" stroke="#06b6d4" stroke-width="1" />
+        <text x="255" y="105" fill="#06b6d4" font-size="9" text-anchor="start">寬軌道防守</text>
+
+        <!-- Dynamic Breakout -->
+        <path d="M 380 110 Q 400 80 430 10" fill="none" stroke="#22c55e" stroke-width="2.5" />
+        <circle cx="415" cy="40" r="5" fill="#facc15" stroke="#0f172a" stroke-width="2" />
+        <text x="415" y="30" fill="#facc15" font-size="11" font-weight="bold" text-anchor="middle" style="text-shadow: 0 1px 3px rgba(0,0,0,0.8);">真突破！</text>
+      </svg>
+    </div>
     
-    <p>基本算法：</p>
+    <h3>原理：像呼吸一樣收縮的通道</h3>
+    <p>市場的波動性是會週期性改變的。有時候像死水，有時候像波濤洶湧的海洋。固定點數的突破盲點在於：在死水期難以觸發，在海嘯期卻又頻繁被假突破掃到停損。</p>
     <ul>
-      <li><strong>基準價格</strong>: 通常是今日開盤價。</li>
-      <li><strong>波動範圍 (Range)</strong>: 過去 N 日內的平均波動幅度 × 係數 K。</li>
-      <li><strong>上軌 = 開盤價 + 係數 × ATR</strong>。</li>
-      <li><strong>下軌 = 開盤價 - 係數 × ATR</strong>。</li>
+      <li><strong style="color: #64748b;">基準價格</strong>: 通常使用今日開盤價或昨日收盤價。</li>
+      <li><strong style="color: #06b6d4;">動態上軌 (多頭觸發線)</strong> = 基準價 + ( N 日 ATR × 係數 K1 )</li>
+      <li><strong style="color: #f59e0b;">動態下軌 (空頭觸發線)</strong> = 基準價 - ( N 日 ATR × 係數 K2 )</li>
     </ul>
 
     <div class="info-callout">
-      <strong>📌 優點：</strong><br>
-      因為它考慮了 ATR，當市場波動劇烈時，突破線會自動移遠，防止被震盪刷出來；當波動平靜時，它會縮窄捕捉細微的趨勢起動。
+      <strong>📌 為什麼要用 ATR (Average True Range)？</strong><br>
+      ATR 精準衡量了最近一段時間每天的「平均最大振幅」。<br>
+      當市場平靜時 (ATR 小)，系統判定「稍微動一下可能就是新趨勢」，所以主動把上下軌<strong>收窄</strong>，變得極度敏感。<br>
+      當市場劇烈震盪時 (ATR 大)，系統判定「現在充滿雜訊雜音」，所以主動把上下軌<strong>拉寬</strong>，避免被來回雙巴。這是量化高手中非常高級的濾網技巧。
     </div>
   `,
 

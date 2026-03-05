@@ -10,19 +10,57 @@ export const unitFiali: UnitDef = {
     needsData: true,
 
     theory: `
-    <p><strong>菲阿里四價 (Filari Four Prices)</strong> 是一個非常經典的支撐壓力突破策略。作者菲阿里曾在多次期貨比賽中奪冠。</p>
-    
-    <p>它捕捉的關鍵指標有：</p>
+    <p><strong>菲阿里四價 (Filari Four Prices)</strong> 是一個非常經典且暴力的純 K 線支撐壓力突破策略。作者菲阿里（Filari）曾依靠這套極簡法則在多次日本期貨比賽中奪冠。</p>
+
+    <div style="margin: 24px 0; background: var(--bg-hover); border-radius: var(--radius-lg); padding: 20px; text-align: center; border: 1px solid var(--border-subtle);">
+      <svg viewBox="0 0 450 200" style="width: 100%; max-width: 500px; height: auto; display: inline-block;">
+        <g stroke="rgba(255,255,255,0.05)" stroke-width="1">
+          <line x1="20%" y1="0" x2="20%" y2="100%" />
+          <line x1="50%" y1="0" x2="50%" y2="100%" />
+          <line x1="80%" y1="0" x2="80%" y2="100%" />
+        </g>
+        
+        <!-- Yesterday's Candlestick -->
+        <text x="100" y="20" fill="#94a3b8" font-size="11" font-weight="bold" text-anchor="middle">昨日 (Yesterday)</text>
+        <line x1="100" y1="40" x2="100" y2="160" stroke="#94a3b8" stroke-width="2" />
+        <!-- Candle Body -->
+        <rect x="85" y="70" width="30" height="60" fill="rgba(34, 197, 94, 0.2)" stroke="#22c55e" stroke-width="2" />
+        <text x="75" y="45" fill="#06b6d4" font-size="10" text-anchor="end">最高價 (High)</text>
+        <text x="75" y="165" fill="#ef4444" font-size="10" text-anchor="end">最低價 (Low)</text>
+        <text x="125" y="75" fill="#22c55e" font-size="10" text-anchor="start">收盤價 (Close)</text>
+
+        <!-- Resistance and Support Lines Extended -->
+        <line x1="100" y1="40" x2="450" y2="40" stroke="#06b6d4" stroke-width="1.5" stroke-dasharray="4,4" />
+        <line x1="100" y1="160" x2="450" y2="160" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4,4" />
+
+        <!-- Today's Price Action -->
+        <text x="300" y="20" fill="#f59e0b" font-size="11" font-weight="bold" text-anchor="middle">今日 (Today)</text>
+        <circle cx="200" cy="100" r="4" fill="#f59e0b" />
+        <text x="190" y="105" fill="#f59e0b" font-size="10" text-anchor="end">今日開盤 (Open)</text>
+        
+        <!-- Price Path Breakout -->
+        <path d="M 200 100 Q 230 140 250 110 T 280 60 T 320 30 T 450 -10" fill="none" stroke="#22c55e" stroke-width="2.5" />
+        
+        <circle cx="304" cy="40" r="6" fill="#facc15" stroke="#0f172a" stroke-width="2" />
+        <line x1="304" y1="40" x2="304" y2="70" stroke="#facc15" stroke-width="1" stroke-dasharray="2,2" />
+        <text x="304" y="85" fill="#facc15" font-size="11" font-weight="bold" text-anchor="middle" style="text-shadow: 0 1px 3px rgba(0,0,0,0.8);">漲破昨日最高！追多</text>
+
+      </svg>
+    </div>
+
+    <h3>四價防守理論</h3>
+    <p>這是一個邏輯極簡，完全不依賴任何均線或技術指標的純價格戰法。它捕捉的四個關鍵錨點：</p>
     <ul>
-      <li><strong>昨天最高價 (Yesterday High)</strong>：多頭最後的目標。</li>
-      <li><strong>昨天最低價 (Yesterday Low)</strong>：空頭最後的防守。</li>
-      <li><strong>昨天收盤價 (Yesterday Close)</strong>：昨日情緒的總結。</li>
-      <li><strong>今天開盤價 (Today Open)</strong>：今日市場共識的起點。</li>
+      <li><strong style="color: #06b6d4;">昨日最高價 (Yesterday High)</strong>：昨日多頭衝鋒的最後根據地。代表上方的最強壓力，一旦今日被它突破，意味著空方所有防線崩潰。</li>
+      <li><strong style="color: #ef4444;">昨日最低價 (Yesterday Low)</strong>：昨日空頭空襲的最深處。一旦被跌破，代表多頭的防守徹底瓦解，趨勢轉而向下。</li>
+      <li><strong style="color: #22c55e;">昨日收盤價 (Yesterday Close)</strong>：昨日交戰一天後的「最終共識」，用來判斷隔夜跳空情緒。</li>
+      <li><strong style="color: #f59e0b;">今日開盤價 (Today Open)</strong>：今日市場共識的起點。</li>
     </ul>
 
     <div class="info-callout">
-      <strong>📌 核心策略邏輯：</strong><br>
-      我們主要追蹤<strong>高低點的突破</strong>。若今天收盤上穿昨日最高價，代表多方力道延續，趨勢極其強烈。
+      <strong>📌 實戰交易法則：</strong><br>
+      策略非常的直觀：<strong>「昨天最高價就是天花板，昨天最低價就是地板」。</strong><br>
+      今日盤中，只要價格漲破天花板，我們就無腦買進做多；只要價格跌穿地板，我們就停損反手放空。它捕捉的是單日極強的動能延續，非常適合用在具有明顯波段趨勢的活躍市場上。
     </div>
   `,
 

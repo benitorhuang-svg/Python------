@@ -10,18 +10,69 @@ export const unitAdxMacd: UnitDef = {
   needsData: true,
 
   theory: `
-    <p><strong>ADX 輔助 MACD 策略</strong> 是一個為了克服 MACD 在震盪市頻繁失靈而設計的進階方案。</p>
+    <p><strong>ADX 輔助 MACD 策略</strong> 是一個為了克服 MACD 在震盪市頻繁失靈而設計的進階組合方案。</p>
     
-    <p>它的核心邏輯是加入一個「趨勢開關」：</p>
+    <div style="margin: 24px 0; background: var(--bg-hover); border-radius: var(--radius-lg); padding: 20px; text-align: center; border: 1px solid var(--border-subtle);">
+      <svg viewBox="0 0 450 180" style="width: 100%; max-width: 500px; height: auto; display: inline-block;">
+        <g stroke="rgba(255,255,255,0.05)" stroke-width="1">
+          <line x1="10%" y1="0" x2="10%" y2="100%" />
+          <line x1="30%" y1="0" x2="30%" y2="100%" />
+          <line x1="50%" y1="0" x2="50%" y2="100%" />
+          <line x1="70%" y1="0" x2="70%" y2="100%" />
+          <line x1="90%" y1="0" x2="90%" y2="100%" />
+        </g>
+        
+        <!-- Background Zones for ADX > 25 -->
+        <rect x="0" y="0" width="130" height="180" fill="rgba(239, 68, 68, 0.05)" />
+        <text x="65" y="20" fill="#ef4444" font-size="10" text-anchor="middle" font-weight="bold">跌勢強烈期</text>
+        
+        <rect x="130" y="0" width="170" height="180" fill="rgba(255, 255, 255, 0.03)" />
+        <text x="215" y="20" fill="#94a3b8" font-size="10" text-anchor="middle" font-weight="bold">橫盤無趨勢期</text>
+        
+        <rect x="300" y="0" width="150" height="180" fill="rgba(34, 197, 94, 0.05)" />
+        <text x="375" y="20" fill="#22c55e" font-size="10" text-anchor="middle" font-weight="bold">漲勢強烈期</text>
+
+        <!-- Zero Line for MACD -->
+        <line x1="0" y1="80" x2="450" y2="80" stroke="#64748b" stroke-width="1" stroke-dasharray="4,4" />
+        <text x="440" y="75" fill="#64748b" font-size="9" text-anchor="end">MACD 零軸</text>
+
+        <!-- ADX Threshold Line -->
+        <line x1="0" y1="150" x2="450" y2="150" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="2,2" />
+        <text x="440" y="145" fill="#f59e0b" font-size="9" text-anchor="end">ADX = 25 天險</text>
+
+        <!-- MACD DIF Line (Cyan) -->
+        <path d="M 0 40 Q 60 40 130 80 T 260 80 T 360 40 T 450 30" fill="none" stroke="#06b6d4" stroke-width="2" />
+        
+        <!-- ADX Line (Pink) -->
+        <path d="M 0 120 Q 50 120 100 130 T 150 160 T 225 170 T 280 160 T 320 130 T 400 110" fill="none" stroke="#ec4899" stroke-width="2.5" />
+        
+        <!-- Ignoring MACD Crossover in flat zone -->
+        <circle cx="215" cy="80" r="5" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="2,2" />
+        <line x1="215" y1="80" x2="215" y2="165" stroke="#94a3b8" stroke-width="1" stroke-dasharray="3,3" />
+        <text x="215" y="65" fill="#94a3b8" font-size="10" font-weight="bold" text-anchor="middle">忽略假金叉 (ADX < 25)</text>
+
+        <!-- Valid Golden Cross -->
+        <circle cx="340" cy="53" r="6" fill="#facc15" stroke="#0f172a" stroke-width="2" />
+        <line x1="340" y1="53" x2="340" y2="120" stroke="#facc15" stroke-width="1" stroke-dasharray="3,3" />
+        <text x="340" y="40" fill="#facc15" font-size="11" font-weight="bold" text-anchor="middle" style="text-shadow: 0 1px 3px rgba(0,0,0,0.8);">有效買入 (ADX > 25)</text>
+      </svg>
+    </div>
+
+    <p>它的核心邏輯是加入一個<strong>「雙重大腦決策機制」</strong>：</p>
     <ul>
-      <li><strong>MACD (動能)</strong>：負責尋找價格轉折與動能方向（快慢線交叉）。</li>
-      <li><strong>ADX (強度)</strong>：負責判斷目前的趨勢是否「夠強」。通常當 ADX > 25 時，代表市場處於強勢趨勢中，此時 MACD 的訊號才值得信任。</li>
+      <li><strong style="color: #06b6d4;">方向大腦 (MACD)</strong>：判斷現在是上漲動能還是下跌動能。負責發射買賣信號。</li>
+      <li><strong style="color: #ec4899;">動能大腦 (ADX)</strong>：平均趨向指數 (Average Directional Index)。它不分多空，只看「目前的趨勢強不強」。數值通常落在 0~100，當 ADX > 25 時，代表市場正處於單邊狂飆狀態。</li>
     </ul>
 
     <div class="info-callout">
-      <strong>📌 為什麼要搭配？</strong><br>
-      MACD 是趨勢追蹤指標，最怕橫盤震盪。ADX 可以告訴我們「現在是不是橫盤」，當 ADX 過低時（例如 < 20），我們選擇觀望，避開不必要的磨損。
+      <strong>📌 為什麼要這兩個組合被譽為經典？</strong><br>
+      MACD 最會賺錢的地方是「大單邊趨勢」，最會把錢虧光的地方是「橫盤震盪」。<br>
+      ADX 可以像雷達一樣告訴我們：「現在是大行情還是死水市」。當 ADX 死氣沉沉（低於 20~25）時，我們直接關閉 MACD，避開無意義的「雙巴交易」(Whipsaw)。
     </div>
+    
+    <h3>策略邏輯總結</h3>
+    <p><strong>✅ 買入條件：</strong>MACD 出現黃金交叉 <b>並且</b> ADX > 25（有的策略會要求 ADX 正在上揚）。</p>
+    <p><strong>✅ 賣出條件：</strong>MACD 出現死亡交叉（這時可以不用管 ADX，因為保本優先）。</p>
   `,
 
   defaultCode: `import json

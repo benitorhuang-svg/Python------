@@ -10,9 +10,52 @@ export const unitDonchian: UnitDef = {
   needsData: true,
 
   theory: `
-    <p><strong>唐奇安通道 (Donchian Channel)</strong> 由 Richard Donchian 提出，是著名的「海龜交易法則」所使用的核心通道技術。</p>
-    
-    <p>這是一種經典的價格突破趨勢追蹤方法，它的通道定義非常直觀，完全由過去一段時間的價格極值來決定：</p>
+    <p><strong>唐奇安通道 (Donchian Channel)</strong> 由 Richard Donchian 提出，是量化交易界最著名的「海龜交易法則」所使用的核心通道技術。更是所有趨勢跟蹤系統的鼻祖。</p>
+
+    <div style="margin: 24px 0; background: var(--bg-hover); border-radius: var(--radius-lg); padding: 20px; text-align: center; border: 1px solid var(--border-subtle);">
+      <svg viewBox="0 0 450 200" style="width: 100%; max-width: 500px; height: auto; display: inline-block;">
+        <g stroke="rgba(255,255,255,0.05)" stroke-width="1">
+          <line x1="20%" y1="0" x2="20%" y2="100%" />
+          <line x1="40%" y1="0" x2="40%" y2="100%" />
+          <line x1="60%" y1="0" x2="60%" y2="100%" />
+          <line x1="80%" y1="0" x2="80%" y2="100%" />
+        </g>
+        
+        <!-- Donchian Channel Fill (Background) -->
+        <path d="M 0 60 L 100 60 L 100 40 L 150 40 L 150 20 L 450 20 L 450 160 L 250 160 L 250 140 L 200 140 L 200 120 L 0 120 Z" fill="rgba(139, 92, 246, 0.05)" />
+        
+        <!-- Upper Band (Highest High) -->
+        <path d="M 0 60 L 100 60 L 100 40 L 150 40 L 150 20 L 450 20" fill="none" stroke="#06b6d4" stroke-width="2" />
+        <text x="440" y="15" fill="#06b6d4" font-size="10" text-anchor="end">上軌 = N日最高價 (海龜買入點)</text>
+        
+        <!-- Lower Band (Lowest Low) -->
+        <path d="M 0 120 L 200 120 L 200 140 L 250 140 L 250 160 L 450 160" fill="none" stroke="#ef4444" stroke-width="2" />
+        <text x="440" y="175" fill="#ef4444" font-size="10" text-anchor="end">下軌 = N日最低價 (反手放空點)</text>
+        
+        <!-- Middle Band -->
+        <path d="M 0 90 L 100 90 L 100 80 L 150 80 L 150 70 L 200 70 L 200 80 L 250 80 L 250 90 L 450 90" fill="none" stroke="#8b5cf6" stroke-width="1" stroke-dasharray="4,4" />
+        <text x="440" y="85" fill="#8b5cf6" font-size="10" text-anchor="end">中軌 = (上軌+下軌)/2 (移動停利點)</text>
+
+        <!-- Price Path -->
+        <path d="M 0 110 Q 50 70 100 40 T 150 20 T 200 100 T 250 160 T 320 100 T 450 60" fill="none" stroke="#f59e0b" stroke-width="2.5" />
+        
+        <!-- Signals -->
+        <circle cx="100" cy="40" r="5" fill="#facc15" stroke="#0f172a" stroke-width="2" />
+        <line x1="100" y1="40" x2="100" y2="70" stroke="#facc15" stroke-width="1" stroke-dasharray="2,2" />
+        <text x="100" y="85" fill="#facc15" font-size="11" font-weight="bold" text-anchor="middle" style="text-shadow: 0 1px 3px rgba(0,0,0,0.8);">創新高買入</text>
+
+        <circle cx="178" cy="70" r="5" fill="#fb923c" stroke="#0f172a" stroke-width="2" />
+        <line x1="178" y1="70" x2="178" y2="50" stroke="#fb923c" stroke-width="1" stroke-dasharray="2,2" />
+        <text x="178" y="45" fill="#fb923c" font-size="10" font-weight="bold" text-anchor="middle">跌破中軌(停利)</text>
+
+        <circle cx="250" cy="160" r="5" fill="#06b6d4" stroke="#0f172a" stroke-width="2" />
+        <line x1="250" y1="160" x2="250" y2="130" stroke="#06b6d4" stroke-width="1" stroke-dasharray="2,2" />
+        <text x="250" y="125" fill="#06b6d4" font-size="11" font-weight="bold" text-anchor="middle" style="text-shadow: 0 1px 3px rgba(0,0,0,0.8);">創新低賣出</text>
+      </svg>
+    </div>
+
+    <h3>通道構成與交易法則</h3>
+    <p>這是一種經典的價格突破趨勢追蹤方法，它的通道定義非常直觀，完全包絡了過去一段時間的價格極值，軌道外觀看起來像一層一層的「階梯」：</p>
 
     <div class="formula-box">
       通道上軌 = 過去 N 日內的最高價 (Highest High)<br>
@@ -21,14 +64,14 @@ export const unitDonchian: UnitDef = {
     </div>
 
     <ul>
-      <li><strong>進場信號：</strong> 當價格突破上軌時，說明市場創下近期新高，趨勢向上，我們進場做多。</li>
-      <li><strong>出場信號：</strong> 傳統海龜會使用較短週期的反向突破出場，或直接跌破「下軌」或「中軌」作為移動停利/停損線。</li>
+      <li><strong style="color: #06b6d4;">進場信號：</strong> 價格突破 55 日最高價（上軌）時，代表市場已經強勢表態，海龜會毫不猶豫地建倉做多，不帶任何個人主觀預測。</li>
+      <li><strong style="color: #8b5cf6;">出場信號 (停利/停損)：</strong> 如果價格只是稍微回檔，海龜會死抱不放。但只要價格跌破「中軌」或「更短期的下軌（例如 20 日新低）」，代表趨勢已遭破壞，必須毫不留情地清倉走人。這確保了「獲利能奔跑，虧損被截斷」。</li>
     </ul>
 
     <div class="info-callout">
-      <strong>📌 為什麼要乘 0.999 跟 1.001？</strong> <br>
-      在原本 FMZ 的期貨套件實作中，為了避免價格精準觸及邊界時反覆震盪發出假信號，
-      通常會讓觸發閾值稍微打一點折扣（例如上軌 * 0.999 讓突破提早一點點發生，或者過濾掉剛好等於的極端情況）。
+      <strong>📌 為什麼代碼裡要乘上 0.999 跟 1.001 的微調係數？</strong> <br>
+      在原本 FMZ 的期貨實作套件中，為了避免價格在一天內「無數次精準觸發同一個邊界價位」造成程式瘋狂進出場，
+      通常會讓觸發閾值稍微打一點折扣（例如 上軌 * 0.999，等於突破門檻稍微降低一點點），來化解黏在邊界上的摩擦雜訊。
     </div>
   `,
 

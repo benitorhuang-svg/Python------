@@ -3,12 +3,53 @@ import { renderMultiLine } from '../engine/chart-renderer';
 
 export const unitKelly: UnitDef = {
     title: '凱利公式驗證',
-    module: '模組六 · 資金管理',
+    module: '模組六 · 風險與資金管理',
     difficulty: '基礎',
     description: '透過蒙地卡羅模擬，驗證凱利公式如何幫助我們計算最佳下注比例。',
 
     theory: `
-    <p><strong>凱利公式（Kelly Criterion）</strong>是一個用來決定最佳下注比例的數學公式，由約翰·凱利（John L. Kelly Jr.）於 1956 年提出。</p>
+    <p><strong>凱利公式（Kelly Criterion）</strong>是一個用來決定最佳下注比例的數學公式，由約翰·凱利（John L. Kelly Jr.）於 1956 年提出，至今仍是量化資金管理領域的聖經。</p>
+
+    <div style="margin: 24px 0; background: var(--bg-hover); border-radius: var(--radius-lg); padding: 20px; text-align: center; border: 1px solid var(--border-subtle);">
+      <svg viewBox="0 0 450 220" style="width: 100%; max-width: 500px; height: auto; display: inline-block;">
+        <g stroke="rgba(255,255,255,0.05)" stroke-width="1">
+          <line x1="20%" y1="0" x2="20%" y2="100%" />
+          <line x1="40%" y1="0" x2="40%" y2="100%" />
+          <line x1="60%" y1="0" x2="60%" y2="100%" />
+          <line x1="80%" y1="0" x2="80%" y2="100%" />
+        </g>
+        
+        <!-- Y Axis (Growth Rate) & X Axis (Bet Size) -->
+        <line x1="50" y1="20" x2="50" y2="180" stroke="#cbd5e1" stroke-width="2" />
+        <line x1="50" y1="180" x2="420" y2="180" stroke="#cbd5e1" stroke-width="2" />
+        <text x="30" y="25" fill="#cbd5e1" font-size="10" transform="rotate(-90 30 25)" font-weight="bold">長期資產增長率 (Growth Rate)</text>
+        <text x="420" y="195" fill="#cbd5e1" font-size="10" text-anchor="end" font-weight="bold">下注資金比例 (Bet Size %)</text>
+
+        <!-- The Kelly Curve (Parabola) -->
+        <!-- Optimal Kelly at 50%, zero growth around 100% -->
+        <path d="M 50 180 Q 150 20 250 180" fill="none" stroke="#22c55e" stroke-width="3" />
+        
+        <!-- Danger Zone Curve -->
+        <path d="M 250 180 Q 320 280 400 350" fill="none" stroke="#ef4444" stroke-width="3" stroke-dasharray="4,4" />
+        
+        <!-- Optimal Kelly Point -->
+        <circle cx="150" cy="80" r="6" fill="#facc15" stroke="#0f172a" stroke-width="2" />
+        <line x1="150" y1="80" x2="150" y2="180" stroke="#facc15" stroke-width="1" stroke-dasharray="2,2" />
+        <text x="150" y="65" fill="#facc15" font-size="12" font-weight="bold" text-anchor="middle">f* (最佳凱利點)</text>
+        <text x="150" y="195" fill="#facc15" font-size="10" text-anchor="middle">最高增長點</text>
+
+        <!-- Half Kelly Point -->
+        <circle cx="100" cy="118" r="4" fill="#06b6d4" />
+        <line x1="100" y1="118" x2="100" y2="180" stroke="#06b6d4" stroke-width="1" stroke-dasharray="2,2" />
+        <text x="100" y="105" fill="#06b6d4" font-size="10" font-weight="bold" text-anchor="middle">半凱利 (實戰極限)</text>
+        <text x="100" y="210" fill="#06b6d4" font-size="9" text-anchor="middle">承擔一半風險/享3/4利潤</text>
+        
+        <!-- Overbetting Zone -->
+        <rect x="250" y="30" width="160" height="140" fill="rgba(239, 68, 68, 0.05)" />
+        <text x="330" y="100" fill="#ef4444" font-size="12" font-weight="bold" text-anchor="middle">過度下注區 (Overbetting)</text>
+        <text x="330" y="120" fill="#ef4444" font-size="10" text-anchor="middle">賺得更少，風險無限大，最終破產</text>
+      </svg>
+    </div>
 
     <p>它的核心問題是：<strong>在已知勝率和賠率的情況下，每次應該投入多少比例的資金，才能讓長期資產成長最大化？</strong></p>
 
@@ -18,21 +59,20 @@ export const unitKelly: UnitDef = {
 
     <p>其中：</p>
     <ul>
-      <li>• <strong>f*</strong> = 最佳下注比例（佔總資金的百分比）</li>
-      <li>• <strong>b</strong> = 賠率（盈利 / 虧損的比值）</li>
-      <li>• <strong>p</strong> = 勝率（獲勝的機率）</li>
-      <li>• <strong>q</strong> = 1 - p（失敗的機率）</li>
+      <li><strong style="color: #facc15;">f*</strong> = 最佳下注比例（佔總資金的百分比）</li>
+      <li><strong style="color: #06b6d4;">b</strong> = 賠率（預期獲利 / 預期虧損）</li>
+      <li><strong style="color: #22c55e;">p</strong> = 勝率（獲勝的機率）</li>
+      <li><strong style="color: #ef4444;">q</strong> = 1 - p（失敗的機率）</li>
     </ul>
 
     <div class="info-callout">
-      <strong>📌 例子：</strong>假設一個交易策略勝率 55%、賠率 2:1（贏2賠1），
+      <strong>📌 例子：</strong>假設一個交易策略勝率 55%、賠率 2:1（停利空間是停損空間的兩倍），
       凱利公式建議的最佳下注比例是 f* = (2×0.55 - 0.45) / 2 = <strong>0.325（32.5%）</strong>
     </div>
 
-    <p>但實際交易中，<strong>全凱利比例風險極高</strong>，通常使用「半凱利」（f*/2）甚至更保守的比例。我們用模擬來驗證不同比例的效果。</p>
-
     <div class="warning-callout">
-      <strong>⚠️ 重要觀念：</strong>下注比例過大不會「賺更多」，反而會因為波動過大導致破產。這就是為什麼資金管理如此重要。
+      <strong>⚠️ 重要觀念：神奇的拋物線</strong><br>
+      如圖所示，資產增長率是一條拋物線。當你下注超過 f* 點（例如全倉梭哈 100%），你並沒有「賺更多」，而是進入了<strong>過度下注區</strong>，幾次連續虧損的波動就會導致本金歸零。實務操作上受到市場滑價與不確定性影響，專業基金通常只會使用<strong>「半凱利 (Half-Kelly)」</strong>：承擔一半的破產風險，卻能享受 3/4 的理論利潤。
     </div>
   `,
 

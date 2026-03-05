@@ -10,27 +10,68 @@ export const unitDualThrust: UnitDef = {
     needsData: true,
 
     theory: `
-    <p><strong>Dual Thrust</strong> 是一個著名的突破系統，適用於股票、期貨和加密貨幣。它屬於「開盤區間突破」策略的改良版。</p>
+    <p><strong>Dual Thrust</strong> 是一個著名的日內趨勢突破系統，由 Michael Boulos 提出。它曾被 Future Truth 雜誌評選為最賺錢的策略之一，是典型的「開盤區間突破」進化版。</p>
 
-    <p>核心邏輯是計算歷史 N 天的區間波動，然後以當日開盤價為基準，加上或減去特定比例的波動，形成今日的「上軌」和「下軌」。當價格突破軌道時進場。</p>
+    <div style="margin: 24px 0; background: var(--bg-hover); border-radius: var(--radius-lg); padding: 20px; text-align: center; border: 1px solid var(--border-subtle);">
+      <svg viewBox="0 0 450 200" style="width: 100%; max-width: 500px; height: auto; display: inline-block;">
+        <g stroke="rgba(255,255,255,0.05)" stroke-width="1">
+          <line x1="20%" y1="0" x2="20%" y2="100%" />
+          <line x1="40%" y1="0" x2="40%" y2="100%" />
+          <line x1="60%" y1="0" x2="60%" y2="100%" />
+          <line x1="80%" y1="0" x2="80%" y2="100%" />
+        </g>
+        
+        <!-- Previous N days history (Left side) -->
+        <rect x="10" y="50" width="80" height="100" fill="rgba(148, 163, 184, 0.1)" stroke="#64748b" stroke-width="1" stroke-dasharray="2,2" />
+        <text x="50" y="40" fill="#94a3b8" font-size="10" text-anchor="middle">過去 N 天價格區間 (Range)</text>
+        <path d="M 20 100 Q 30 50 40 80 T 60 150 T 80 120" fill="none" stroke="#94a3b8" stroke-width="1.5" />
+
+        <!-- Today's Trading Session -->
+        <line x1="100" y1="0" x2="100" y2="200" stroke="#f59e0b" stroke-width="1" stroke-dasharray="4,4" />
+        <text x="115" y="15" fill="#f59e0b" font-size="11" font-weight="bold">今日開盤</text>
+
+        <!-- Open Price Baseline -->
+        <line x1="100" y1="120" x2="450" y2="120" stroke="#ffffff" stroke-width="1" stroke-dasharray="2,2" />
+        <text x="440" y="115" fill="#ffffff" font-size="10" text-anchor="end">開盤基準價 (Open)</text>
+        <circle cx="100" cy="120" r="4" fill="#ffffff" />
+
+        <!-- Upper Band (K1) -->
+        <rect x="100" y="70" width="350" height="50" fill="rgba(34, 197, 94, 0.05)" />
+        <line x1="100" y1="70" x2="450" y2="70" stroke="#22c55e" stroke-width="2" />
+        <text x="440" y="65" fill="#22c55e" font-size="10" text-anchor="end">上軌 = Open + K1 × Range</text>
+
+        <!-- Lower Band (K2) - Asymmetric, slightly tighter -->
+        <rect x="100" y="120" width="350" height="30" fill="rgba(239, 68, 68, 0.05)" />
+        <line x1="100" y1="150" x2="450" y2="150" stroke="#ef4444" stroke-width="2" />
+        <text x="440" y="145" fill="#ef4444" font-size="10" text-anchor="end">下軌 = Open - K2 × Range</text>
+
+        <!-- Price Path Breakout -->
+        <path d="M 100 120 Q 150 140 200 100 T 260 80 T 320 60 T 450 20" fill="none" stroke="#06b6d4" stroke-width="2.5" />
+        
+        <!-- Long signal -->
+        <circle cx="280" cy="70" r="6" fill="#facc15" stroke="#0f172a" stroke-width="2" />
+        <line x1="280" y1="70" x2="280" y2="40" stroke="#facc15" stroke-width="1" stroke-dasharray="2,2" />
+        <text x="280" y="35" fill="#facc15" font-size="11" font-weight="bold" text-anchor="middle" style="text-shadow: 0 1px 3px rgba(0,0,0,0.8);">突破上軌 (做多)</text>
+      </svg>
+    </div>
+
+    <h3>核心邏輯設計</h3>
+    <p>它放棄了單純用固定的某個價格（比如昨日最高價）當作突破線，而是動態計算過去一段時間的<strong>「絕對震幅」</strong>：</p>
 
     <div class="formula-box">
-      HH = N天最高價<br>
-      LC = N天最低收盤價<br>
-      HC = N天最高收盤價<br>
-      LL = N天最低價<br><br>
-      Range = max(HH - LC, HC - LL)<br>
-      上軌 = Open + K1 × Range<br>
-      下軌 = Open - K2 × Range
+      Range = max(前N天最高價 - 前N天最低收盤, 前N天最高收盤 - 前N天最低價)<br><br>
+      今日上軌 = 今日開盤價 + K1 × Range<br>
+      今日下軌 = 今日開盤價 - K2 × Range
     </div>
 
     <ul>
-      <li><strong>看多突破：</strong> 當日價格大於「上軌」 → 買進（或平空做多）</li>
-      <li><strong>看空突破：</strong> 當日價格小於「下軌」 → 賣出（或平多做空）</li>
+      <li><strong style="color: #22c55e;">看多突破：</strong> 當日內價格強勢拉升，大於「上軌」時 → 買進（如果持有空單則反手做多）。</li>
+      <li><strong style="color: #ef4444;">看空突破：</strong> 當日內價格弱勢殺跌，小於「下軌」時 → 賣出（如果持有多單則反手做空）。</li>
     </ul>
 
     <div class="info-callout">
-      <strong>📌 特色：</strong>Dual Thrust 允許 K1 和 K2 不同。如果 K1 < K2，代表做多的門檻比較低，這在多頭市場會更有利。這種非對稱性是它成功的原因之一。
+      <strong>📌 聰明的「非對稱性」(Asymmetry)：</strong><br>
+      Dual Thrust 的靈魂在於允許 K1 和 K2 的倍數不同。在長期的多頭大牛市中，你可以把 K1 調小 (例如 0.5)，把 K2 調大 (例如 0.8) —— 意思是：只要稍微往漲的方向突破我就追，但往跌的方向必須殺得很深我才判斷是空頭。這種順應大勢的微調是它能暴利的關鍵。
     </div>
   `,
 

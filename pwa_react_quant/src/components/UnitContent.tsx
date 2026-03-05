@@ -142,15 +142,15 @@ export default function UnitContent({ unitId, unit, pyodideReady }: Props) {
                 <div className="center-content-area">
                     {/* Theory */}
                     <div className={`theory-scroll ${centerView === 'theory' ? 'active-view' : 'hidden-view'}`}>
-                        <div style={{ marginBottom: '20px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                        <div className="unit-header-area">
+                            <div className="unit-header-badges">
                                 <span className="badge-module">{unit.module}</span>
-                                <span className="badge-difficulty">{unit.difficulty || ''}</span>
+                                {unit.difficulty && <span className="badge-difficulty">{unit.difficulty}</span>}
                             </div>
-                            <h1 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '12px', lineHeight: 1.2 }}>
-                                {unit.title}
-                            </h1>
-                            <div className="info-callout">{unit.description}</div>
+                            <h1 className="unit-title">{unit.title}</h1>
+                            <div className="unit-description">
+                                <p>{unit.description}</p>
+                            </div>
                         </div>
 
                         <div className="section-card">

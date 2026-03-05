@@ -10,18 +10,63 @@ export const unitEmv: UnitDef = {
     needsData: true,
 
     theory: `
-    <p><strong>簡易波動指標 (Ease of Movement, EMV)</strong> 由 Richard Arms 開發，它的核心邏輯非常獨特：</p>
-    
-    <p>它衡量的是「價格變動」與「成交量」之間的關係：</p>
+    <p><strong>簡易波動指標 (Ease of Movement, EMV)</strong> 由 Richard Arms 開發，它的核心邏輯非常獨特。它試圖解答一個問題：<strong>推動價格上漲（或下跌），需要多大的成交量？</strong></p>
+
+    <div style="margin: 24px 0; background: var(--bg-hover); border-radius: var(--radius-lg); padding: 20px; text-align: center; border: 1px solid var(--border-subtle);">
+      <svg viewBox="0 0 450 180" style="width: 100%; max-width: 500px; height: auto; display: inline-block;">
+        <g stroke="rgba(255,255,255,0.05)" stroke-width="1">
+          <line x1="10%" y1="0" x2="10%" y2="100%" />
+          <line x1="30%" y1="0" x2="30%" y2="100%" />
+          <line x1="50%" y1="0" x2="50%" y2="100%" />
+          <line x1="70%" y1="0" x2="70%" y2="100%" />
+          <line x1="90%" y1="0" x2="90%" y2="100%" />
+        </g>
+        
+        <!-- Zero Line -->
+        <line x1="0" y1="80" x2="450" y2="80" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4,4" />
+        <text x="440" y="75" fill="#64748b" font-size="9" text-anchor="end">阻力零軸 (Zero Line)</text>
+
+        <!-- EMV Line -->
+        <path d="M 0 80 Q 50 120 100 130 T 160 80 T 260 30 T 360 120 T 450 60" fill="none" stroke="#a855f7" stroke-width="3" />
+        
+        <!-- Scene 1: Heavy Volume, Price won't move much (Low EMV near zero) -->
+        <rect x="70" y="150" width="20" height="30" fill="rgba(148, 163, 184, 0.4)" stroke="#94a3b8" stroke-width="1" />
+        <rect x="100" y="140" width="20" height="40" fill="rgba(148, 163, 184, 0.4)" stroke="#94a3b8" stroke-width="1" />
+        <text x="95" y="130" fill="#f59e0b" font-size="10" font-weight="bold" text-anchor="middle">爆出天量，但價格不動</text>
+        <circle cx="95" cy="120" r="4" fill="#f59e0b" />
+        <line x1="95" y1="120" x2="95" y2="80" stroke="#f59e0b" stroke-width="1" stroke-dasharray="2,2" />
+
+        <!-- Scene 2: Low Volume, Price sky rockets (High EMV) -->
+        <rect x="230" y="170" width="20" height="10" fill="rgba(148, 163, 184, 0.4)" stroke="#94a3b8" stroke-width="1" />
+        <rect x="260" y="165" width="20" height="15" fill="rgba(148, 163, 184, 0.4)" stroke="#94a3b8" stroke-width="1" />
+        <text x="255" y="60" fill="#22c55e" font-size="10" font-weight="bold" text-anchor="middle">無量空拋，價格輕鬆暴漲</text>
+        <circle cx="255" cy="40" r="6" fill="#22c55e" stroke="#0f172a" stroke-width="2" />
+        <line x1="255" y1="40" x2="255" y2="160" stroke="#22c55e" stroke-width="1" stroke-dasharray="2,2" />
+
+        <!-- Scene 3: Low Volume, Price drops (Low EMV Negative) -->
+        <rect x="350" y="165" width="20" height="15" fill="rgba(148, 163, 184, 0.4)" stroke="#94a3b8" stroke-width="1" />
+        <text x="360" y="145" fill="#ef4444" font-size="10" font-weight="bold" text-anchor="middle">輕鬆下跌區</text>
+
+        <!-- Legend -->
+        <rect x="10" y="160" width="12" height="4" fill="#a855f7" />
+        <text x="26" y="166" fill="#cbd5e1" font-size="10">EMV 線</text>
+        <rect x="10" y="172" width="12" height="6" fill="rgba(148, 163, 184, 0.4)" stroke="#94a3b8" stroke-width="1" />
+        <text x="26" y="178" fill="#cbd5e1" font-size="10">市場成交量</text>
+      </svg>
+    </div>
+
+    <h3>物理學的動能視角</h3>
+    <p>想像推動一台車。如果用很大的力氣（爆大量）車子卻不怎麼走，代表這裡**阻力很大**。如果只輕輕推一下（無量），車子就滑行了幾十公尺（大漲）代表這是一條無阻力的下坡！</p>
     <ul>
-      <li><strong>EMV 高於 0</strong>：價格上漲且成交量不大。這代表市場阻力極小，上漲非常「輕鬆」。</li>
-      <li><strong>EMV 低於 0</strong>：價格下跌且成交量不大。這代表下跌阻力極小。</li>
-      <li><strong>EMV 接近 0</strong>：價格不動，或是成交量極大但價格推不動。這通常代表阻力重重。</li>
+      <li><strong style="color: #22c55e;">EMV 極高 (遠大於 0)</strong>：價格大幅度上漲，而且成交量很小。這代表上方完全沒有解套與賣壓阻力，是「最健康的輕鬆上漲」。</li>
+      <li><strong style="color: #ef4444;">EMV 極低 (遠小於 0)</strong>：價格不費吹灰之力就暴跌。下方沒有任何人想接刀。</li>
+      <li><strong style="color: #f59e0b;">EMV 接近 0</strong>：要麼是市場死水一攤沒人交易；要麼就是「爆出了天量卻收了十字星」，多空主力正在史詩級換手，誰也推不動誰。</li>
     </ul>
 
     <div class="info-callout">
-      <strong>📌 交易提示：</strong><br>
-      我們通常使用 EMV 的移動平均線。當 EMV 向上穿過 0 軸時，是一個強大的買入訊號，表示空方已無力阻擋。
+      <strong>📌 實戰交易邏輯：</strong><br>
+      因為每日的 EMV 跳動過快，我們通常使用 EMV 的移動平均線（例如 EMA 14）。<br>
+      當 <strong>EMV 向上穿過零軸</strong> 時，是一個強大的買入訊號，表示空方的阻力已經撤退，上漲通道被打開。
     </div>
   `,
 

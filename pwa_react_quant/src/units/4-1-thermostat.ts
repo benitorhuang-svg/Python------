@@ -10,17 +10,52 @@ export const unitThermostat: UnitDef = {
     needsData: true,
 
     theory: `
-    <p>市場總是只有 20% 的時間在走趨勢，80% 的時間在震盪。<strong>恆溫器策略 (Thermostat Strategy)</strong> 的強大之處在於它具備「偵測器」與「切換開關」。</p>
+    <p>市場總是只有 20% 的時間在走趨勢，80% 的時間在無聊的震盪。<strong>恆溫器策略 (Thermostat Strategy)</strong> 的強大之處在於它具備「環境偵測器」與「大腦切換開關」，能在不同的市場採用截然不同的武器。</p>
+
+    <div style="margin: 24px 0; background: var(--bg-hover); border-radius: var(--radius-lg); padding: 20px; text-align: center; border: 1px solid var(--border-subtle);">
+      <svg viewBox="0 0 450 200" style="width: 100%; max-width: 500px; height: auto; display: inline-block;">
+        <g stroke="rgba(255,255,255,0.05)" stroke-width="1">
+          <line x1="20%" y1="0" x2="20%" y2="100%" />
+          <line x1="40%" y1="0" x2="40%" y2="100%" />
+          <line x1="60%" y1="0" x2="60%" y2="100%" />
+          <line x1="80%" y1="0" x2="80%" y2="100%" />
+        </g>
+
+        <!-- Thermostat Logic Flow -->
+        <rect x="150" y="10" width="150" height="40" fill="#334155" stroke="#cbd5e1" stroke-width="1.5" rx="8" />
+        <text x="225" y="30" fill="#f8fafc" font-size="12" font-weight="bold" text-anchor="middle">環境偵測：CMI (震盪指數)</text>
+        
+        <path d="M 225 50 L 225 70" fill="none" stroke="#cbd5e1" stroke-width="2" />
+        <path d="M 100 70 L 350 70" fill="none" stroke="#cbd5e1" stroke-width="2" />
+        <path d="M 100 70 L 100 90" fill="none" stroke="#cbd5e1" stroke-width="2" />
+        <path d="M 350 70 L 350 90" fill="none" stroke="#cbd5e1" stroke-width="2" />
+
+        <!-- Trend Mode (Left) -->
+        <rect x="20" y="90" width="160" height="90" fill="rgba(34, 197, 94, 0.1)" stroke="#22c55e" stroke-width="2" rx="8" />
+        <text x="100" y="115" fill="#22c55e" font-size="13" font-weight="bold" text-anchor="middle">🌊 趨勢模式</text>
+        <text x="100" y="135" fill="#e2e8f0" font-size="10" text-anchor="middle">CMI &gt; 35 (高動能)</text>
+        <rect x="40" y="145" width="120" height="20" fill="rgba(34, 197, 94, 0.2)" rx="4" />
+        <text x="100" y="159" fill="#22c55e" font-size="10" font-weight="bold" text-anchor="middle">採用「雙均線追多/空」</text>
+
+        <!-- Swing Mode (Right) -->
+        <rect x="270" y="90" width="160" height="90" fill="rgba(245, 158, 11, 0.1)" stroke="#f59e0b" stroke-width="2" rx="8" />
+        <text x="350" y="115" fill="#f59e0b" font-size="13" font-weight="bold" text-anchor="middle">⚖️ 震盪模式</text>
+        <text x="350" y="135" fill="#e2e8f0" font-size="10" text-anchor="middle">CMI &le; 35 (死水市場)</text>
+        <rect x="290" y="145" width="120" height="20" fill="rgba(245, 158, 11, 0.2)" rx="4" />
+        <text x="350" y="159" fill="#f59e0b" font-size="10" font-weight="bold" text-anchor="middle">採用「RSI 低買高賣」</text>
+      </svg>
+    </div>
     
-    <p>策略靈魂：<strong>CMI (Choppiness Market Index)</strong></p>
+    <h3>策略靈魂：CMI (Choppiness Market Index)</h3>
+    <p>CMI 的公式通常是計算一段時間內「絕對漲跌幅」與「每日波動總和」的比值。這與之前提過的 AMA 自適應均線 (ER) 原理非常相似。</p>
     <ul>
-      <li><strong>CMI > 35</strong>：判斷市場處於<strong>趨勢模式 (Trend Mode)</strong>。此時執行「突破買入」或「均線跟蹤」。</li>
-      <li><strong>CMI <= 35</strong>：判斷市場處於<strong>震盪模式 (Swing Mode)</strong>。此時執行「低買高賣」或「逆勢回檔」。</li>
+      <li><strong style="color: #22c55e;">進入趨勢模式 (CMI > 35)</strong>：當市場走出一波大行情時，均線追蹤是最賺錢的策略。系統會自動把大腦切換為「動量跟隨者」，不管價格有多高，只要指標說是多頭就用力買下去。</li>
+      <li><strong style="color: #f59e0b;">進入震盪模式 (CMI ≤ 35)</strong>：當市場連續幾個禮拜上下洗刷、沒有明確方向時。我們這時候如果用均線就會發生「頻繁觸發雙巴虧損」。這時系統會切換為「擺盪交易員」，只要跌深就抄底，稍微漲一點就趕緊獲利入袋。</li>
     </ul>
 
     <div class="info-callout">
       <strong>📌 為什麼叫恆溫器？</strong><br>
-      冷了就加熱（震盪時改用逆勢策略搶波段），熱了就降溫（趨勢時用突破順向追擊）。它目標是在任何市場環境都能穩定獲利。
+      因為它像現代冷氣空調一樣：發現房間冷了就送暖風（震盪時用逆勢策略搶短多），發現太熱了就送冷風（過熱時用反轉策略）。它嘗試整合我們在前面模組學到的兩個極端理論，達到在任何環境下都能穩定獲利的聖杯理想。
     </div>
   `,
 

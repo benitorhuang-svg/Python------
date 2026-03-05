@@ -10,18 +10,63 @@ export const unitArbitrage: UnitDef = {
     needsData: true,
 
     theory: `
-    <p><strong>跨期套利 (Inter-period Arbitrage)</strong> 是量化交易中風險極低的一種方式。它的核心在於找出兩個極度相關的資產（例如同一產品的不同月分期貨）。</p>
+    <p><strong>跨期套利 / 統計套利 (Pairs Trading / Arbitrage)</strong> 是機構與避險基金最喜歡的「低風險量化模型」。它的核心在於找出兩個極度相關的資產（例如台指期 6月合約與 7月合約，或是可口可樂與百事可樂的股票）。</p>
     
-    <p>操作原理：</p>
+    <div style="margin: 24px 0; background: var(--bg-hover); border-radius: var(--radius-lg); padding: 20px; text-align: center; border: 1px solid var(--border-subtle);">
+      <svg viewBox="0 0 450 220" style="width: 100%; max-width: 500px; height: auto; display: inline-block;">
+        <g stroke="rgba(255,255,255,0.05)" stroke-width="1">
+          <line x1="20%" y1="0" x2="20%" y2="100%" />
+          <line x1="40%" y1="0" x2="40%" y2="100%" />
+          <line x1="60%" y1="0" x2="60%" y2="100%" />
+          <line x1="80%" y1="0" x2="80%" y2="100%" />
+        </g>
+        
+        <!-- Background standard deviation channel -->
+        <rect x="0" y="70" width="450" height="80" fill="rgba(148, 163, 184, 0.1)" />
+        
+        <!-- Spread Trajectory -->
+        <path d="M 0 110 Q 30 150 60 110 T 120 40 T 180 110 T 240 180 T 300 110 T 360 80 T 450 110" fill="none" stroke="#f59e0b" stroke-width="2.5" />
+        
+        <!-- Mean Line -->
+        <line x1="0" y1="110" x2="450" y2="110" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,4" />
+        <text x="440" y="105" fill="#94a3b8" font-size="10" text-anchor="end">歷史平均價差 (0 軸或均線)</text>
+
+        <!-- Upper Band (Overvalued) -->
+        <line x1="0" y1="70" x2="450" y2="70" stroke="#ef4444" stroke-width="1.5" />
+        <text x="440" y="65" fill="#ef4444" font-size="10" text-anchor="end">高估線 (+2個標準差)</text>
+        
+        <circle cx="120" cy="40" r="5" fill="#ef4444" />
+        <text x="120" y="30" fill="#ef4444" font-size="10" font-weight="bold" text-anchor="middle">價差過大！(放空A, 買進B)</text>
+        <path d="M 120 40 L 120 110" fill="none" stroke="#ef4444" stroke-width="1" stroke-dasharray="2,2" />
+
+        <!-- Lower Band (Undervalued) -->
+        <line x1="0" y1="150" x2="450" y2="150" stroke="#22c55e" stroke-width="1.5" />
+        <text x="440" y="165" fill="#22c55e" font-size="10" text-anchor="end">低估線 (-2個標準差)</text>
+        
+        <circle cx="240" cy="180" r="5" fill="#22c55e" />
+        <text x="240" y="200" fill="#22c55e" font-size="10" font-weight="bold" text-anchor="middle">價差過小！(買進A, 放空B)</text>
+        <path d="M 240 180 L 240 110" fill="none" stroke="#22c55e" stroke-width="1" stroke-dasharray="2,2" />
+
+        <!-- Return to Mean Signal -->
+        <circle cx="150" cy="110" r="6" fill="#facc15" stroke="#0f172a" stroke-width="2" />
+        <text x="150" y="130" fill="#facc15" font-size="10" font-weight="bold" text-anchor="middle">均值回歸 (雙腿平倉獲利)</text>
+        
+        <circle cx="270" cy="110" r="6" fill="#facc15" stroke="#0f172a" stroke-width="2" />
+        <text x="270" y="95" fill="#facc15" font-size="10" font-weight="bold" text-anchor="middle">均值回歸 (雙腿平倉獲利)</text>
+      </svg>
+    </div>
+
+    <h3>對沖的物理學：橡皮筋原理</h3>
+    <p>我們不去預測大盤明天是漲還是跌（因為沒人能穩定預測），我們只計算兩者的<strong>「差價 (Spread)」</strong>：Spread = 合約A價格 - 合約B價格。</p>
     <ul>
-      <li><strong>計算價差</strong>：Spread = 合約 A - 合約 B。</li>
-      <li><strong>價差回歸</strong>：合約 A 與 B 的價格雖然會波動，但由於是同一資產，它們的「價差」通常會在一個穩定區間內波動。</li>
-      <li><strong>進場規則</strong>：當價差過大（上穿區間），賣出 A 買入 B。當價差過小，買入 A 賣出 B。</li>
+      <li><strong>同類資產的物理牽引：</strong> 因為它們代表的是同一類東西，所以這兩者的差價就像被一條橡皮筋綁住。大部分時間價差都在合理的區間波動。</li>
+      <li><strong>進場點 (橡皮筋被拉到極限)：</strong> 當某天主力突然炒作合約A，導致 A 狂漲而 B 沒跟上，價差被拉得異常巨大。此時我們「放空被高估的合約A」，同時「買進被低估的合約B」。</li>
+      <li><strong>出場點 (橡皮筋彈回)：</strong> 幾天後市場恢復冷靜，過大的價差收斂回均值。我們把兩邊的部位同時平倉。不管這幾天大盤是暴漲還是暴跌，我們賺的純粹是「價差回歸」的利潤。</li>
     </ul>
 
     <div class="info-callout">
-      <strong>📌 為什麼叫套利？</strong><br>
-      因為我們對沖了市場大盤的漲跌風險（Beta）。只要兩者的相關性不消失，且價差會回歸，我們就能獲取穩定的利潤。
+      <strong>📌 市場中立風險 (Market Neutral)：</strong><br>
+      因為你同時擁有一張多單和一張空單，兩者的盈虧會互相抵銷。你免疫了股災或崩盤的系統性 Beta 風險，這就是真正的「避險套利 (Hedging Arbitrage)」。
     </div>
   `,
 
