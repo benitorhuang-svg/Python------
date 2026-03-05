@@ -88,7 +88,8 @@ chart_data = report
 
     params: [
         { id: 'BASE_PCT', label: '首注比例', min: 0.01, max: 0.2, step: 0.01, default: 0.05, format: v => `${(v * 100).toFixed(0)}%` },
-        { id: 'WIN_STEP', label: '獲利加碼點', min: 1, max: 10, step: 1, default: 3, format: v => `${v}%` }
+        { id: 'WIN_STEP', label: '獲利加碼點', min: 1, max: 10, step: 1, default: 3, format: v => `${v}%` },
+        { id: 'MAX_LAYERS', label: '最大加碼次數', min: 1, max: 10, step: 1, default: 3, format: v => `${v} 次` }
     ],
 
     exercises: [

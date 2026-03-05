@@ -35,6 +35,9 @@ def get_mock_spread(i, price):
     # 模擬另一份合約，帶有一點波動與回歸特性
     return 100 + 50 * np.sin(i / 5)
 
+# ═══ 策略參數 ═══
+STD_MULTIPLIER = 1.5
+
 # 準備數據
 data = stock_data
 prices = [d['Close'] for d in data]
@@ -49,9 +52,9 @@ def strategy(engine, data, i):
     # 當 Spread 離均值太遠時，我們假設它會回歸
     current_spread = spreads[i]
     
-    # 買進價差 (當價差低於 均值-2個標准差)
+    # 買進價差 (當價差低於 均值-N個標准差)
     if engine.position == 0:
-        if current_spread < (mean_spread - 1.5 * std_spread):
+        if current_spread < (mean_spread - STD_MULTIPLIER * std_spread):
             engine.buy(data[i]['Close'], i, None, "價差極低 - 買入套利")
             
     elif engine.position > 0:
@@ -107,7 +110,9 @@ chart_data = {
         });
     },
 
-    params: [],
+    params: [
+        { id: 'STD_MULTIPLIER', label: '標準差倍數', min: 1.0, max: 3.0, step: 0.1, default: 1.5, format: v => `${v} 倍` }
+    ],
 
     exercises: [
         '目前的邏輯是價差低於 1.5 倍標準差買入。如果標準差倍數調高（例如 2.5），訊號會變得更準確還是更稀少？',

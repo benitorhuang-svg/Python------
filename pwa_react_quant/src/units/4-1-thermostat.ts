@@ -132,7 +132,8 @@ chart_data = {
     },
 
     params: [
-        { id: 'CMI_THRESH', label: '切換閾值', min: 20, max: 50, step: 2, default: 35, format: v => `趨勢 > ${v}` }
+        { id: 'CMI_THRESH', label: '切換閾值', min: 20, max: 50, step: 2, default: 35, format: v => `趨勢 > ${v}` },
+        { id: 'CMI_PERIOD', label: 'CMI 週期', min: 10, max: 50, step: 5, default: 20, format: v => `${v} 日` }
     ],
 
     exercises: [

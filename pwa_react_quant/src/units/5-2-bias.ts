@@ -126,7 +126,8 @@ chart_data = {
 
   params: [
     { id: 'BUY_BIAS', label: '買入負乖離', min: -10, max: -0.5, step: 0.5, default: -3.0, format: v => `低於 ${v}%` },
-    { id: 'SELL_BIAS', label: '賣出正乖離', min: 0.5, max: 10, step: 0.5, default: 1.0, format: v => `高於 ${v}%` }
+    { id: 'SELL_BIAS', label: '賣出正乖離', min: 0.5, max: 10, step: 0.5, default: 1.0, format: v => `高於 ${v}%` },
+    { id: 'MA_PERIOD', label: 'MA 週期', min: 5, max: 60, step: 5, default: 20, format: v => `${v} 日` }
   ],
 
   exercises: [

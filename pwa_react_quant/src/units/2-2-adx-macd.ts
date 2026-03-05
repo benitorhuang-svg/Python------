@@ -126,7 +126,10 @@ chart_data = {
 
   params: [
     { id: 'ADX_THRESH', label: 'ADX 強度閾值', min: 10, max: 40, step: 1, default: 25, format: v => `> ${v}` },
-    { id: 'ADX_PERIOD', label: 'ADX 週期', min: 5, max: 30, step: 1, default: 14, format: v => `${v} 日` }
+    { id: 'ADX_PERIOD', label: 'ADX 週期', min: 5, max: 30, step: 1, default: 14, format: v => `${v} 日` },
+    { id: 'MACD_FAST', label: 'MACD 快線', min: 5, max: 30, step: 1, default: 12, format: v => `${v}` },
+    { id: 'MACD_SLOW', label: 'MACD 慢線', min: 10, max: 60, step: 1, default: 26, format: v => `${v}` },
+    { id: 'MACD_SIG', label: 'MACD 訊號', min: 3, max: 20, step: 1, default: 9, format: v => `${v}` }
   ],
 
   exercises: [

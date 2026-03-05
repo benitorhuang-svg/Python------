@@ -970,15 +970,12 @@ body::after {
 }
 
 .params-grid {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
 }
 
 .param-item {
-    flex: 1;
-    min-width: 140px;
     background: var(--bg-hover);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-xs);
