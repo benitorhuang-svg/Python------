@@ -193,12 +193,8 @@ export default function UnitContent({ unitId, unit, pyodideReady }: Props) {
                     </div>
                     <div className="btn-group">
                         <button
-                            className="btn-action"
+                            className={`btn-action ${rightView === 'terminal' ? 'active-btn' : ''}`}
                             onClick={() => setRightView('terminal')}
-                            style={{
-                                background: rightView === 'terminal' ? 'rgba(255, 255, 255, 0.08)' : '',
-                                borderColor: rightView === 'terminal' ? 'var(--border-medium)' : ''
-                            }}
                         >
                             <Terminal size={12} /> Terminal Result
                         </button>

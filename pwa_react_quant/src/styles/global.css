@@ -30,6 +30,13 @@
     --border-medium: rgba(255, 255, 255, 0.1);
     --border-glow: rgba(34, 211, 238, 0.2);
 
+    --bg-header: rgba(0, 0, 0, 0.2);
+    --bg-header-strong: rgba(0, 0, 0, 0.35);
+    --bg-hover: rgba(255, 255, 255, 0.04);
+    --bg-hover-strong: rgba(255, 255, 255, 0.08);
+    --bg-active: rgba(34, 211, 238, 0.08);
+    --brand-primary-muted: rgba(34, 211, 238, 0.04);
+
     --radius-xs: 6px;
     --radius-sm: 8px;
     --radius-md: 10px;
@@ -66,6 +73,13 @@ body.light {
     --border-medium: rgba(0, 0, 0, 0.15);
     --border-glow: rgba(14, 165, 233, 0.2);
 
+    --bg-header: rgba(0, 0, 0, 0.03);
+    --bg-header-strong: rgba(0, 0, 0, 0.06);
+    --bg-hover: rgba(0, 0, 0, 0.04);
+    --bg-hover-strong: rgba(0, 0, 0, 0.08);
+    --bg-active: rgba(14, 165, 233, 0.08);
+    --brand-primary-muted: rgba(14, 165, 233, 0.04);
+
     --gradient-primary: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
     --gradient-surface: linear-gradient(160deg, rgba(0, 0, 0, 0.03) 0%, transparent 100%);
 }
@@ -101,7 +115,7 @@ body.light::after {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--bg-hover-strong);
     border-radius: 10px;
 }
 
@@ -182,7 +196,7 @@ body::after {
     height: 28px;
     border-radius: var(--radius-xs);
     border: 1px solid var(--border-subtle);
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--bg-hover);
     color: var(--text-muted);
     cursor: pointer;
     display: flex;
@@ -193,7 +207,7 @@ body::after {
 }
 
 .theme-toggle:hover {
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--bg-hover-strong);
     color: var(--text-primary);
     border-color: var(--border-medium);
 }
@@ -277,7 +291,7 @@ body::after {
     height: 30px;
     border-radius: var(--radius-xs);
     border: 1px solid var(--border-subtle);
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--bg-hover);
     color: var(--text-muted);
     cursor: pointer;
     display: flex;
@@ -288,7 +302,7 @@ body::after {
 }
 
 .sidebar-toggle:hover {
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--bg-hover-strong);
     color: var(--text-primary);
 }
 
@@ -300,6 +314,25 @@ body::after {
     margin-top: 8px;
     width: 100%;
     padding: 0 6px;
+}
+
+.sidebar-collapsed-brand {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 16px;
+    margin-top: 4px;
+}
+
+.sidebar-collapsed-brand .theme-toggle {
+    width: 26px;
+    height: 26px;
+}
+
+.sidebar-collapsed-brand .sidebar-toggle {
+    width: 26px;
+    height: 26px;
 }
 
 .sidebar-icon-item {
@@ -315,13 +348,40 @@ body::after {
 }
 
 .sidebar-icon-item:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--bg-hover-strong);
     color: var(--text-secondary);
 }
 
 .sidebar-icon-item.active {
-    background: rgba(34, 211, 238, 0.08);
+    background: var(--bg-active);
     color: var(--brand-primary);
+}
+
+.sidebar-brand-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border-subtle);
+    background: var(--bg-header);
+}
+
+.sidebar-brand-row .nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.sidebar-brand-row .theme-toggle {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.sidebar-brand-row .sidebar-toggle {
+    width: 26px;
+    height: 26px;
 }
 
 .sidebar-header-row {
@@ -332,7 +392,13 @@ body::after {
     padding: 0 12px;
     border-bottom: 1px solid var(--border-subtle);
     flex-shrink: 0;
-    background: rgba(0, 0, 0, 0.15);
+    background: var(--bg-header);
+}
+
+.sidebar-header-row:not(:first-child) {
+    border-bottom: none;
+    background: transparent;
+    height: 34px;
 }
 
 .sidebar-title {
@@ -374,7 +440,7 @@ body::after {
 }
 
 .tree-module-header:hover {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--bg-hover);
     color: var(--text-secondary);
 }
 
@@ -415,12 +481,12 @@ body::after {
 
 .tree-unit-item:hover {
     color: var(--text-secondary);
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--bg-hover);
 }
 
 .tree-unit-item.active {
     color: var(--brand-primary);
-    background: rgba(34, 211, 238, 0.04);
+    background: var(--brand-primary-muted);
     border-left-color: var(--brand-primary);
 }
 
@@ -470,7 +536,7 @@ body::after {
     padding: 10px 14px;
     border-bottom: 1px solid var(--border-subtle);
     flex-shrink: 0;
-    background: rgba(0, 0, 0, 0.15);
+    background: var(--bg-header);
 }
 
 .stat-card-compact {
@@ -572,7 +638,7 @@ body::after {
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: var(--brand-secondary);
-    background: rgba(129, 140, 248, 0.08);
+    background: var(--brand-primary-muted);
     padding: 3px 9px;
     border-radius: var(--radius-full);
     border: 1px solid rgba(129, 140, 248, 0.15);
@@ -582,7 +648,7 @@ body::after {
     font-size: 0.63rem;
     font-weight: 600;
     color: var(--text-muted);
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--bg-hover);
     padding: 3px 8px;
     border-radius: var(--radius-full);
     border: 1px solid var(--border-subtle);
@@ -592,7 +658,7 @@ body::after {
     height: 48px;
     display: flex;
     border-bottom: 1px solid var(--border-subtle);
-    background: rgba(0, 0, 0, 0.2);
+    background: var(--bg-header);
     flex-shrink: 0;
 }
 
@@ -615,7 +681,7 @@ body::after {
 
 .panel-tab:hover {
     color: var(--text-secondary);
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--bg-hover);
 }
 
 .panel-tab.active {
@@ -675,7 +741,7 @@ body::after {
 
 .info-callout {
     padding: 10px 14px;
-    background: rgba(34, 211, 238, 0.03);
+    background: var(--brand-primary-muted);
     border-left: 3px solid var(--brand-primary);
     border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
     color: var(--text-secondary);
@@ -730,7 +796,7 @@ body::after {
     justify-content: space-between;
     padding: 0 8px 0 0;
     border-bottom: 1px solid var(--border-subtle);
-    background: rgba(0, 0, 0, 0.2);
+    background: var(--bg-header);
     flex-shrink: 0;
 }
 
@@ -758,7 +824,7 @@ body::after {
 
 .editor-tab:hover {
     color: var(--text-secondary);
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--bg-hover);
 }
 
 .editor-tab.active {
@@ -775,6 +841,13 @@ body::after {
     background: var(--brand-primary);
     border-radius: 2px 2px 0 0;
     box-shadow: 0 0 6px var(--brand-glow);
+}
+
+.primary-glow {
+    background: var(--gradient-primary);
+    border: none;
+    color: #fff;
+    box-shadow: 0 0 12px var(--brand-glow);
 }
 
 /* Code view */
@@ -808,7 +881,7 @@ body::after {
     font-size: 0.7rem;
     font-weight: 600;
     color: var(--text-dim);
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--bg-hover);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-xs);
     cursor: pointer;
@@ -817,7 +890,7 @@ body::after {
 }
 
 .btn-clear-terminal:hover {
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--bg-hover-strong);
     color: var(--text-secondary);
 }
 
@@ -834,7 +907,7 @@ body::after {
     font-size: 0.8rem;
     font-weight: 600;
     border: 1px solid var(--border-subtle);
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--bg-hover);
     color: var(--text-secondary);
     cursor: pointer;
     display: flex;
@@ -845,9 +918,14 @@ body::after {
 }
 
 .btn-action:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--bg-hover-strong);
     border-color: var(--border-medium);
     color: var(--text-primary);
+}
+
+.btn-action.active-btn {
+    background: var(--bg-hover-strong);
+    border-color: var(--border-medium);
 }
 
 .btn-execute {
@@ -872,7 +950,7 @@ body::after {
 .params-block {
     padding: 10px 12px;
     border-bottom: 1px solid var(--border-subtle);
-    background: rgba(255, 255, 255, 0.01);
+    background: var(--bg-hover);
     flex-shrink: 0;
 }
 
@@ -901,7 +979,7 @@ body::after {
 .param-item {
     flex: 1;
     min-width: 140px;
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--bg-hover);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-xs);
     padding: 8px 10px;
@@ -913,7 +991,7 @@ body::after {
 
 .param-item:focus-within {
     border-color: var(--border-glow);
-    background: rgba(34, 211, 238, 0.02);
+    background: var(--brand-primary-muted);
 }
 
 .param-info {
@@ -933,7 +1011,7 @@ body::after {
     font-size: 0.72rem;
     font-weight: 500;
     color: var(--brand-primary);
-    background: rgba(34, 211, 238, 0.06);
+    background: var(--brand-primary-muted);
     padding: 2px 6px;
     border-radius: 3px;
 }
@@ -942,7 +1020,7 @@ body::after {
     -webkit-appearance: none;
     appearance: none;
     height: 3px;
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--bg-hover-strong);
     border-radius: 3px;
     cursor: pointer;
     width: 100%;
@@ -991,7 +1069,7 @@ body::after {
 }
 
 .terminal-header {
-    background: rgba(0, 0, 0, 0.4);
+    background: var(--bg-header-strong);
     padding: 6px 12px;
     font-size: 0.65rem;
     color: #94a3b8;
@@ -1038,7 +1116,7 @@ body::after {
     height: 18px;
     border-radius: 3px;
     border: none;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--bg-hover-strong);
     color: var(--text-dim);
     cursor: pointer;
     display: flex;
@@ -1047,7 +1125,7 @@ body::after {
 }
 
 .terminal-clear-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--bg-hover-strong);
     color: var(--text-secondary);
 }
 

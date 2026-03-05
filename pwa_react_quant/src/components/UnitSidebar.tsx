@@ -43,11 +43,11 @@ export default function UnitSidebar({ activeId, collapsed, onToggle, darkMode, o
     if (collapsed) {
         return (
             <aside className="unit-sidebar collapsed">
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center', marginBottom: '16px', marginTop: '4px' }}>
-                    <button className="theme-toggle" onClick={onToggleTheme} style={{ width: 26, height: 26, background: 'var(--gradient-primary)', border: 'none', color: '#fff' }}>
+                <div className="sidebar-collapsed-brand">
+                    <button className="theme-toggle primary-glow" onClick={onToggleTheme}>
                         {darkMode ? <Sun size={14} /> : <Moon size={14} />}
                     </button>
-                    <button className="sidebar-toggle" onClick={onToggle} title="展開導航" style={{ width: 26, height: 26 }}>
+                    <button className="sidebar-toggle" onClick={onToggle} title="展開導航">
                         <BookOpen size={14} />
                     </button>
                 </div>
@@ -78,21 +78,21 @@ export default function UnitSidebar({ activeId, collapsed, onToggle, darkMode, o
 
     return (
         <aside className="unit-sidebar">
-            <div className="sidebar-brand-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderBottom: '1px solid var(--border-subtle)', background: 'rgba(0, 0, 0, 0.2)' }}>
-                <div className="nav-brand" onClick={() => (window.location.hash = 'home')} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                    <button className="theme-toggle" onClick={(e) => { e.stopPropagation(); onToggleTheme?.(); }} style={{ width: 24, height: 24, flexShrink: 0, background: 'var(--gradient-primary)', border: 'none', color: '#fff', boxShadow: '0 0 12px var(--brand-glow)' }}>
+            <div className="sidebar-brand-row">
+                <div className="nav-brand" onClick={() => (window.location.hash = 'home')}>
+                    <button className="theme-toggle primary-glow" onClick={(e) => { e.stopPropagation(); onToggleTheme?.(); }}>
                         {darkMode ? <Sun size={13} /> : <Moon size={13} />}
                     </button>
-                    <span className="brand-text" style={{ fontWeight: 800, fontSize: '0.92rem' }}>Quant_Lab</span>
+                    <span className="brand-text">Quant_Lab</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <button className="sidebar-toggle" onClick={onToggle} title="收合導航" style={{ width: 26, height: 26 }}>
+                    <button className="sidebar-toggle" onClick={onToggle} title="收合導航">
                         <ChevronDown size={14} style={{ transform: 'rotate(90deg)' }} />
                     </button>
                 </div>
             </div>
 
-            <div className="sidebar-header-row" style={{ borderBottom: 'none', background: 'transparent', height: '34px' }}>
+            <div className="sidebar-header-row">
                 <div className="sidebar-title">
                     <Layers size={13} />
                     <span>Theory/Content</span>
