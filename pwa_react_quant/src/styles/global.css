@@ -21,10 +21,10 @@
     --brand-blue: #60a5fa;
     --brand-glow: rgba(34, 211, 238, 0.35);
 
-    --text-primary: #f1f5f9;
-    --text-secondary: #94a3b8;
-    --text-muted: #64748b;
-    --text-dim: #475569;
+    --text-primary: #ffffff;
+    --text-secondary: #e2e8f0;
+    --text-muted: #cbd5e1;
+    --text-dim: #94a3b8;
 
     --border-subtle: rgba(255, 255, 255, 0.06);
     --border-medium: rgba(255, 255, 255, 0.1);
@@ -66,8 +66,8 @@ body.light {
 
     --text-primary: #0f172a;
     --text-secondary: #334155;
-    --text-muted: #64748b;
-    --text-dim: #94a3b8;
+    --text-muted: #475569;
+    --text-dim: #64748b;
 
     --border-subtle: rgba(0, 0, 0, 0.08);
     --border-medium: rgba(0, 0, 0, 0.15);
@@ -1013,7 +1013,7 @@ body::after {
     gap: 8px;
     font-size: 0.85rem;
     font-weight: 600;
-    color: var(--text-dim);
+    color: var(--text-muted);
     background: transparent;
     border: none;
     cursor: pointer;
@@ -1211,7 +1211,7 @@ body::after {
     padding: 0 16px;
     font-size: 0.85rem;
     font-weight: 600;
-    color: var(--text-dim);
+    color: var(--text-muted);
     background: transparent;
     border: none;
     cursor: pointer;
@@ -1327,6 +1327,28 @@ body::after {
 .btn-action.active-btn {
     background: var(--bg-hover-strong);
     border-color: var(--border-medium);
+}
+
+.btn-data-toggle {
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    font-weight: 700;
+    background: var(--bg-hover);
+    color: var(--text-muted);
+    border: 1px solid transparent;
+    padding: 3px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-data-toggle:hover:not(.active) {
+    background: var(--bg-hover-strong);
+    color: var(--text-primary);
+}
+
+.btn-data-toggle.active {
+    background: var(--brand-primary);
+    color: #000;
+    box-shadow: 0 0 10px var(--brand-glow);
 }
 
 .btn-execute {

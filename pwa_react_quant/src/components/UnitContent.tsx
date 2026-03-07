@@ -63,6 +63,7 @@ export default function UnitContent({ unitId, unit, pyodideReady }: Props) {
     const [dataLoaded, setDataLoaded] = useState(false);
     const [optimizeProgress, setOptimizeProgress] = useState({ current: 0, total: 0 });
     const [scanResults, setScanResults] = useState<any[]>([]);
+    const [dataSource, setDataSource] = useState<'real' | 'simulated'>('real');
     const [scanParams, setScanParams] = useState<Record<string, { start: number, end: number, step: number, active: boolean }>>({});
 
     const getStatClass = (val: number | string, type: 'sharpe' | 'calmar' | 'pf') => {
@@ -114,12 +115,27 @@ export default function UnitContent({ unitId, unit, pyodideReady }: Props) {
             });
         }
 
-        if (unit.needsData && pyodideReady) {
-            setDataLoaded(false);
-            loadStockData('2330').then(async result => {
-                await setGlobal('stock_data', result.data);
-                setDataLoaded(true);
-            });
+        if (unit.needsData) {
+            if (pyodideReady) {
+                setDataLoaded(false);
+                const loadPromise = dataSource === 'real'
+                    ? loadStockData('2330')
+                    : import('../engine/data-loader').then(m => ({ data: m.generateSimulatedData(500), source: 'simulated' as const, symbol: '模擬股票' }));
+
+                loadPromise.then(async result => {
+                    await setGlobal('stock_data', result.data);
+                    setDataLoaded(true);
+                    console.log(`[UnitContent] Data Loaded: ${result.symbol} (${result.source})`);
+                }).catch(async (e) => {
+                    console.error("[UnitContent] Data load failed, retrying with pure simulation:", e);
+                    const { generateSimulatedData } = await import('../engine/data-loader');
+                    const simData = generateSimulatedData(500);
+                    await setGlobal('stock_data', simData);
+                    setDataLoaded(true);
+                });
+            } else {
+                setDataLoaded(false);
+            }
         } else {
             setDataLoaded(true);
         }
@@ -131,7 +147,7 @@ export default function UnitContent({ unitId, unit, pyodideReady }: Props) {
             });
             setScanParams(scanInit);
         }
-    }, [unitId, unit, pyodideReady]);
+    }, [unitId, unit, pyodideReady, dataSource]);
 
     useEffect(() => {
         if (centerView === 'theory' && theoryRef.current) {
@@ -161,28 +177,42 @@ export default function UnitContent({ unitId, unit, pyodideReady }: Props) {
     };
 
     const handleRun = async () => {
-        if (!pyodideReady) return alert('引擎準備中...');
         setIsRunning(true);
         setRightView('terminal');
         setOutputLogs([{ text: '> 正在初始化回測引擎...', type: 'info' }]);
 
-        const code = getCode();
-        const res = await runAndGetResult(code, unit.resultVar, (text, type) => {
-            setOutputLogs(prev => [...prev, { text: `[${new Date().toLocaleTimeString([], { hour12: false })}] ${text}`, type }]);
-        });
+        try {
+            // Ensure data is loaded for units that need it
+            if (unit.needsData && !dataLoaded) {
+                setOutputLogs(prev => [...prev, { text: '> 正在載入股票數據，請稍候...', type: 'info' }]);
+                const loadResult = dataSource === 'real'
+                    ? await loadStockData('2330')
+                    : await import('../engine/data-loader').then(m => ({ data: m.generateSimulatedData(500), source: 'simulated' as const, symbol: '模擬股票' }));
+                await setGlobal('stock_data', loadResult.data);
+                setDataLoaded(true);
+                setOutputLogs(prev => [...prev, { text: `> 數據載入完成: ${loadResult.symbol} (${loadResult.source})`, type: 'info' }]);
+            }
 
-        if (res.success && res.data) {
-            setStats(res.data as StrategyStats);
-            setCenterView('result');
-            setTimeout(() => {
-                renderEquityCurve('result-chart', res.data as StrategyStats);
-                if (res.data.drawdown_series) renderUnderwaterChart('result-underwater-chart', res.data as StrategyStats);
-                if (res.data.profit_distribution) renderDistributionChart('result-dist-chart', res.data.profit_distribution);
-                if (res.data.price_data) renderPriceWithMA('result-price-ma-chart', { ...(res.data.price_data as any), ...(res.data.ma_data as any), trades: res.data.trades });
-                if (res.data.volume_data) renderVolumeChart('result-volume-chart', res.data.volume_data);
-            }, 100);
-        } else if (!res.success) {
-            setOutputLogs(prev => [...prev, { text: 'ERROR: ' + (res.error || 'Execution failed'), type: 'error' }]);
+            const code = getCode();
+            const res = await runAndGetResult(code, unit.resultVar, (text, type) => {
+                setOutputLogs(prev => [...prev, { text: `[${new Date().toLocaleTimeString([], { hour12: false })}] ${text}`, type }]);
+            });
+
+            if (res.success && res.data) {
+                setStats(res.data as StrategyStats);
+                setCenterView('result');
+                setTimeout(() => {
+                    renderEquityCurve('result-chart', res.data as StrategyStats);
+                    if (res.data.drawdown_series) renderUnderwaterChart('result-underwater-chart', res.data as StrategyStats);
+                    if (res.data.profit_distribution) renderDistributionChart('result-dist-chart', res.data.profit_distribution);
+                    if (res.data.price_data) renderPriceWithMA('result-price-ma-chart', { ...(res.data.price_data as any), ...(res.data.ma_data as any), trades: res.data.trades });
+                    if (res.data.volume_data) renderVolumeChart('result-volume-chart', res.data.volume_data);
+                }, 100);
+            } else if (!res.success) {
+                setOutputLogs(prev => [...prev, { text: 'ERROR: ' + (res.error || 'Execution failed'), type: 'error' }]);
+            }
+        } catch (err: any) {
+            setOutputLogs(prev => [...prev, { text: 'ERROR: ' + (err.message || String(err)), type: 'error' }]);
         }
         setIsRunning(false);
     };
@@ -511,14 +541,12 @@ export default function UnitContent({ unitId, unit, pyodideReady }: Props) {
                             <Terminal size={12} /> Terminal Result
                         </button>
                         <button
-                            className={`btn-action btn-execute ${isRunning || !dataLoaded ? 'active' : ''}`}
-                            disabled={isRunning || !pyodideReady || !dataLoaded}
+                            className={`btn-action btn-execute ${isRunning ? 'active' : ''}`}
+                            disabled={isRunning}
                             onClick={handleRun}
                         >
                             {isRunning ? (
                                 <><Square size={11} fill="white" /> Stop</>
-                            ) : !dataLoaded ? (
-                                <><div className="spinner-dots" style={{ width: 12, height: 12 }}></div> Loading Data</>
                             ) : (
                                 <><Play size={12} fill="currentColor" /> Run</>
                             )}
@@ -529,8 +557,27 @@ export default function UnitContent({ unitId, unit, pyodideReady }: Props) {
                 {/* Parameters (Shared across right views) */}
                 {unit.params && unit.params.length > 0 && (
                     <div className="params-block">
-                        <div className="params-header">
+                        <div className="params-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div className="params-title"><Settings2 size={11} /> Parameters</div>
+                            {unit.needsData && (
+                                <div className="data-source-toggle" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.65rem' }}>
+                                    <span style={{ opacity: 0.8, color: 'var(--text-muted)' }}>Data:</span>
+                                    <button
+                                        className={`btn-data-toggle ${dataSource === 'real' ? 'active' : ''}`}
+                                        onClick={() => setDataSource('real')}
+                                        title="使用真實股票數據 (2330)"
+                                    >
+                                        真實 (2330)
+                                    </button>
+                                    <button
+                                        className={`btn-data-toggle ${dataSource === 'simulated' ? 'active' : ''}`}
+                                        onClick={() => setDataSource('simulated')}
+                                        title="使用虛擬隨機數據"
+                                    >
+                                        虛擬
+                                    </button>
+                                </div>
+                            )}
                         </div>
                         <div className="params-grid">
                             {unit.params.map(p => (

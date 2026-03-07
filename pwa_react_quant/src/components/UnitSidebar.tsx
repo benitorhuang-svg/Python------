@@ -97,12 +97,6 @@ export default function UnitSidebar({ activeId, collapsed, onToggle, darkMode, o
                 </div>
             </div>
 
-            <div className="sidebar-header-row">
-                <div className="sidebar-title">
-                    <Layers size={13} />
-                    <span>Theory/Content</span>
-                </div>
-            </div>
 
             <nav className="sidebar-tree">
                 {moduleKeys.map((modName) => {

@@ -49,6 +49,10 @@ export async function initPyodide(onProgress?: (msg: string) => void): Promise<v
             }
         } else if (type === 'ERROR') {
             console.error('[Worker] ERROR:', payload.error);
+            // If we're still waiting for READY, reject all waiters
+            if (!ready) {
+                readyCallbacks.length = 0;
+            }
         }
     };
 
@@ -63,12 +67,20 @@ export async function runPython(
     return runAndGetResult(code, null, onOutput);
 }
 
+async function waitForReady(): Promise<void> {
+    if (ready && worker) return;
+    return new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error('Python 環境啟動逾時 (30s)')), 30000);
+        readyCallbacks.push(() => { clearTimeout(timeout); resolve(); });
+    });
+}
+
 export async function runAndGetResult(
     code: string,
     resultVar: string | null,
     onOutput?: (text: string, type: 'info' | 'error') => void
 ): Promise<RunResult> {
-    if (!worker || !ready) throw new Error('Python 環境尚未就緒');
+    await waitForReady();
 
     currentOutputHandler = onOutput || null;
 
@@ -79,7 +91,7 @@ export async function runAndGetResult(
 }
 
 export async function setGlobal(name: string, value: unknown): Promise<void> {
-    if (!worker || !ready) return;
+    await waitForReady();
     return new Promise((resolve) => {
         pendingResolvers[`set_${name}`] = resolve as any;
         worker?.postMessage({ type: 'SET_GLOBAL', name, value });
