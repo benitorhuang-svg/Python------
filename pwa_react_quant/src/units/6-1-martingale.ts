@@ -129,9 +129,7 @@ engine = BacktestEngine(data, initial_capital=100000)
 report = engine.run(strategy)
 
 # 輸出結果
-print(f"═══ 馬丁格爾策略回測 ═══")
 print(f"最高加碼層數: {current_bet_count}")
-print(f"總報酬率: {report['total_return']:+.2f}%")
 
 chart_data = report
 `,

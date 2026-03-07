@@ -123,7 +123,13 @@ export default function App() {
                   <div className="spinner" />
                 </div>
               ) : currentUnit ? (
-                <UnitContent key={currentUnitId} unitId={currentUnitId} unit={currentUnit} pyodideReady={pyodideReady} />
+                <UnitContent
+                  key={currentUnitId}
+                  unitId={currentUnitId}
+                  unit={currentUnit}
+                  pyodideReady={pyodideReady}
+                  onRunStart={() => setSidebarCollapsed(true)}
+                />
               ) : null
             ) : (
               <Home />

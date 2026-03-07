@@ -20,30 +20,51 @@ export interface LoadResult {
 const TW_STOCK_BASE = 'https://benitorhuang-svg.github.io/tw-stock-app';
 let priceIndex: Record<string, string> | null = null;
 
-export async function loadStockData(symbol = '2330'): Promise<LoadResult> {
+export async function loadStockData(symbol = '2330.TW'): Promise<LoadResult> {
     try {
-        if (!priceIndex) {
-            const res = await fetch(`${TW_STOCK_BASE}/data/price_index.json`, {
-                signal: AbortSignal.timeout(5000)
-            });
-            if (res.ok) priceIndex = await res.json();
-        }
+        // Yahoo Finance API endpoint for OHLC data (2 years, daily)
+        const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=2y&interval=1d`;
 
-        if (priceIndex?.[symbol]) {
-            const csvRes = await fetch(
-                `${TW_STOCK_BASE}/data/prices/${priceIndex[symbol]}`,
-                { signal: AbortSignal.timeout(8000) }
-            );
-            if (csvRes.ok) {
-                const data = parseCSV(await csvRes.text());
+        // Use allorigins as a CORS proxy to bypass browser restrictions
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(yahooUrl)}`;
+
+        const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(10000) });
+
+        if (res.ok) {
+            const json = await res.json();
+            const result = json.chart?.result?.[0];
+
+            if (result && result.timestamp && result.indicators?.quote?.[0]) {
+                const timestamps = result.timestamp as number[];
+                const quote = result.indicators.quote[0];
+
+                const data: OHLCVBar[] = [];
+                for (let i = 0; i < timestamps.length; i++) {
+                    if (quote.open[i] === null || quote.close[i] === null) continue;
+
+                    const dateObj = new Date(timestamps[i] * 1000);
+                    // Format as YYYY-MM-DD
+                    const dateStr = dateObj.toISOString().slice(0, 10);
+
+                    data.push({
+                        Date: dateStr,
+                        Open: quote.open[i],
+                        High: quote.high[i],
+                        Low: quote.low[i],
+                        Close: quote.close[i],
+                        Volume: quote.volume[i] || 0
+                    });
+                }
+
                 if (data.length > 50) {
-                    console.log(`[Data] 真實數據: ${symbol} (${data.length} 根K線)`);
+                    console.log(`[Data] Yahoo Finance 真實數據: ${symbol} (${data.length} 根K線)`);
                     return { data, source: 'real', symbol };
                 }
             }
         }
+        console.warn(`[Data] Yahoo API did not return valid chart data for ${symbol}`);
     } catch (e) {
-        console.warn('[Data] 真實數據不可用，改用模擬:', (e as Error).message);
+        console.warn('[Data] Yahoo Finance API 請求失敗，改用模擬數據:', (e as Error).message);
     }
 
     const data = generateSimulatedData(500);

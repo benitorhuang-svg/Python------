@@ -119,13 +119,10 @@ engine = BacktestEngine(data, initial_capital=100000)
 report = engine.run(macd_strategy)
 
 # ═══ 輸出結果 ═══
-print(f"═══ MACD 策略回測結果 ═══")
 print(f"參數: {FAST_PERIOD},{SLOW_PERIOD},{SIGNAL_PERIOD}")
 print(f"初始資金: {report['initial_capital']:,.0f}")
 print(f"最終資金: {report['final_capital']:,.2f}")
-print(f"總報酬率: {report['total_return']:+.2f}%")
 print(f"勝    率: {report['win_rate']:.1f}%")
-print(f"最大回撤: {report['max_drawdown']:.2f}%")
 
 chart_data = {
     **report,

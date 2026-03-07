@@ -111,10 +111,7 @@ engine = BacktestEngine(data, initial_capital=100000, slippage=0.0003)
 report = engine.run(strategy)
 
 # 輸出結果
-print(f"═══ 高低點突破 (Long/Short) ═══")
 print(f"回看週期: {LOOKBACK}")
-print(f"總報酬率: {report['total_return']:+.2f}%")
-print(f"獲利因子: {report['profit_factor']}")
 
 chart_data = {
     **report,

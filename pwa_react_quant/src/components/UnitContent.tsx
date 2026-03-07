@@ -1,16 +1,17 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import type { UnitDef } from '../units/types';
 import { createEditor, getCode, setCode } from '../engine/editor';
-import { renderEquityCurve, renderPriceWithMA, renderVolumeChart, renderUnderwaterChart, renderDistributionChart } from '../engine/chart-renderer';
+import { renderEquityCurve, renderPriceWithMA, renderVolumeChart, renderUnderwaterChart, renderDistributionChart, renderOptimizationBarChart, renderOptimizationScatterChart } from '../engine/chart-renderer';
 import { runAndGetResult, setGlobal } from '../engine/pyodide-runner';
 import { loadStockData } from '../engine/data-loader';
 import katex from 'katex';
-import { BookOpen, BarChart3, Play, Copy, Terminal, Settings2, Square, X, Code2, Zap, FileDown } from 'lucide-react';
+import { BookOpen, BarChart3, Play, Copy, Terminal, Settings2, Square, X, Code2, Zap, FileDown, ChevronRight } from 'lucide-react';
 
 interface Props {
     unitId: string;
     unit: UnitDef;
     pyodideReady: boolean;
+    onRunStart?: () => void;
 }
 
 interface StrategyStats {
@@ -30,7 +31,7 @@ interface StrategyStats {
     [key: string]: unknown;
 }
 
-export default function UnitContent({ unitId, unit, pyodideReady }: Props) {
+export default function UnitContent({ unitId, unit, pyodideReady, onRunStart }: Props) {
     const format4 = (val: any) => {
         if (val === undefined || val === null || val === '-') return '-';
         const num = typeof val === 'number' ? val : parseFloat(String(val));
@@ -57,13 +58,14 @@ export default function UnitContent({ unitId, unit, pyodideReady }: Props) {
     const [outputLogs, setOutputLogs] = useState<{ text: string, type: string }[]>([]);
     const [isRunning, setIsRunning] = useState(false);
     const [stats, setStats] = useState<StrategyStats | null>(null);
-    const [centerView, setCenterView] = useState<'theory' | 'result'>('theory');
+    const [centerView, setCenterView] = useState<'theory' | 'run' | 'optimize'>('theory');
     const [rightView, setRightView] = useState<'code' | 'terminal' | 'optimize'>('code');
     const [isOptimizing, setIsOptimizing] = useState(false);
     const [dataLoaded, setDataLoaded] = useState(false);
     const [optimizeProgress, setOptimizeProgress] = useState({ current: 0, total: 0 });
     const [scanResults, setScanResults] = useState<any[]>([]);
     const [dataSource, setDataSource] = useState<'real' | 'simulated'>('real');
+    const [symbol, setSymbol] = useState('2330.TW');
     const [scanParams, setScanParams] = useState<Record<string, { start: number, end: number, step: number, active: boolean }>>({});
 
     const getStatClass = (val: number | string, type: 'sharpe' | 'calmar' | 'pf') => {
@@ -156,41 +158,56 @@ export default function UnitContent({ unitId, unit, pyodideReady }: Props) {
                 if (el.id === 'ma-formula') katex.render('MA(n) = \\frac{1}{n} \\sum_{i=1}^{n} C_i', el as HTMLElement, { displayMode: true, throwOnError: false });
             });
         }
-        // Re-render charts if stats exist and view changes to result
-        if (centerView === 'result' && stats) {
-            setTimeout(() => {
+        // Re-render charts
+        setTimeout(() => {
+            if (centerView === 'run' && stats) {
                 renderEquityCurve('result-chart', stats);
                 if (stats.drawdown_series) renderUnderwaterChart('result-underwater-chart', stats);
                 if (stats.profit_distribution) renderDistributionChart('result-dist-chart', stats.profit_distribution);
                 if (stats.price_data) renderPriceWithMA('result-price-ma-chart', { ...(stats.price_data as any), ...(stats.ma_data as any), trades: stats.trades });
                 if (stats.volume_data) renderVolumeChart('result-volume-chart', stats.volume_data);
-            }, 100);
-        }
-    }, [centerView, unitId, stats]);
+            }
+            if (centerView === 'optimize' && scanResults.length > 0) {
+                renderOptimizationBarChart('result-opt-bar', scanResults, (idx: number) => {
+                    const r = scanResults[idx];
+                    Object.entries(r.params).forEach(([id, val]: [string, any]) => handleParamChange(id, val.toString()));
+                    setRightView('code');
+                    handleRun();
+                });
+                renderOptimizationScatterChart('result-opt-scatter', scanResults);
+            }
+        }, 100);
+    }, [centerView, unitId, stats, scanResults]);
 
     const handleParamChange = (id: string, value: string) => {
         const val = parseFloat(value);
         setParams(prev => ({ ...prev, [id]: val }));
+        setStats(null); // Clear old results as they no longer match the params
         const currentCode = getCode();
         const newDoc = currentCode.replace(new RegExp(`(${id}\\s*=\\s*)([\\d.]+)`), `$1${value}`);
         if (newDoc !== currentCode) setCode(newDoc);
     };
 
     const handleRun = async () => {
+        onRunStart?.();
         setIsRunning(true);
+        setStats(null); // Ensure fresh run
         setRightView('terminal');
         setOutputLogs([{ text: '> 正在初始化回測引擎...', type: 'info' }]);
 
         try {
-            // Ensure data is loaded for units that need it
-            if (unit.needsData && !dataLoaded) {
-                setOutputLogs(prev => [...prev, { text: '> 正在載入股票數據，請稍候...', type: 'info' }]);
-                const loadResult = dataSource === 'real'
-                    ? await loadStockData('2330')
-                    : await import('../engine/data-loader').then(m => ({ data: m.generateSimulatedData(500), source: 'simulated' as const, symbol: '模擬股票' }));
-                await setGlobal('stock_data', loadResult.data);
-                setDataLoaded(true);
-                setOutputLogs(prev => [...prev, { text: `> 數據載入完成: ${loadResult.symbol} (${loadResult.source})`, type: 'info' }]);
+            if (unit.needsData) {
+                if (!dataLoaded) {
+                    setOutputLogs(prev => [...prev, { text: '> 正在載入股票數據，請稍候...', type: 'info' }]);
+                    const loadResult = dataSource === 'real'
+                        ? await loadStockData(symbol || '2330.TW')
+                        : await import('../engine/data-loader').then(m => ({ data: m.generateSimulatedData(500), source: 'simulated' as const, symbol: '模擬股票' }));
+                    await setGlobal('stock_data', loadResult.data);
+                    setDataLoaded(true);
+                    setOutputLogs(prev => [...prev, { text: `> 數據載入完成: ${loadResult.symbol} (${loadResult.source})`, type: 'info' }]);
+                } else {
+                    setOutputLogs(prev => [...prev, { text: `> 使用快取完成: ${symbol || '模擬股票'}`, type: 'info' }]);
+                }
             }
 
             const code = getCode();
@@ -200,7 +217,7 @@ export default function UnitContent({ unitId, unit, pyodideReady }: Props) {
 
             if (res.success && res.data) {
                 setStats(res.data as StrategyStats);
-                setCenterView('result');
+                setCenterView('run');
                 setTimeout(() => {
                     renderEquityCurve('result-chart', res.data as StrategyStats);
                     if (res.data.drawdown_series) renderUnderwaterChart('result-underwater-chart', res.data as StrategyStats);
@@ -230,6 +247,7 @@ export default function UnitContent({ unitId, unit, pyodideReady }: Props) {
 
     const handleOptimize = async () => {
         if (!pyodideReady) return;
+        onRunStart?.(); // Call onRunStart here
         setIsOptimizing(true);
         setScanResults([]);
 
@@ -287,6 +305,7 @@ export default function UnitContent({ unitId, unit, pyodideReady }: Props) {
         results.sort((a, b) => b.return - a.return);
         setScanResults(results);
         setIsOptimizing(false);
+        setCenterView('optimize');
     };
 
     const startResizing = useCallback((e: React.MouseEvent) => {
@@ -319,72 +338,25 @@ export default function UnitContent({ unitId, unit, pyodideReady }: Props) {
         <div className="unit-layout-2col">
             {/* ═══ CENTER PANEL ═══ */}
             <div className="unit-center-panel">
-                {/* Top tabs */}
                 <div className="panel-top-tabs">
                     <button
                         className={`panel-tab ${centerView === 'theory' ? 'active' : ''}`}
                         onClick={() => setCenterView('theory')}
                     >
-                        <BookOpen size={12} /> 內容說明
+                        內容說明
                     </button>
                     <button
-                        className={`panel-tab ${centerView === 'result' ? 'active' : ''}`}
-                        onClick={() => setCenterView('result')}
+                        className={`panel-tab ${centerView === 'run' ? 'active' : ''}`}
+                        onClick={() => setCenterView('run')}
                     >
-                        <BarChart3 size={12} /> 執行結果
+                        單次回測
                     </button>
-                </div>
-
-                {/* Stat cards row */}
-                <div className="stat-cards-row" style={{ display: centerView === 'result' && stats ? 'grid' : 'none' }}>
-                    <div className="stat-card-compact">
-                        <div className="stat-card-label">Returns / Benchmark</div>
-                        <div className={`stat-card-value ${(stats?.total_return ?? 0) >= 0 ? 'up' : 'down'}`}>
-                            {(stats?.total_return ?? 0) >= 0 ? '+' : ''}{format4(stats?.total_return ?? 0)}%
-                        </div>
-                        <div style={{ fontSize: '0.6rem', marginTop: '2px', opacity: 0.6 }}>
-                            B&H: {stats?.bh_return ? `${stats.bh_return > 0 ? '+' : ''}${format4(stats.bh_return)}%` : '-'}
-                        </div>
-                    </div>
-                    <div className="stat-card-compact">
-                        <div className="stat-card-label">Sharpe Ratio</div>
-                        <div className={`stat-card-value ${getStatClass(stats?.sharpe_ratio ?? 0, 'sharpe')}`}>
-                            {format4(stats?.sharpe_ratio ?? '-')}
-                        </div>
-                    </div>
-                    <div className="stat-card-compact">
-                        <div className="stat-card-label">Calmar Ratio</div>
-                        <div className={`stat-card-value ${getStatClass(stats?.calmar_ratio ?? 0, 'calmar')}`}>
-                            {format4(stats?.calmar_ratio ?? '-')}
-                        </div>
-                    </div>
-                    <div className="stat-card-compact">
-                        <div className="stat-card-label">Profit Factor</div>
-                        <div className={`stat-card-value ${getStatClass(stats?.profit_factor ?? 0, 'pf')}`}>
-                            {format4(stats?.profit_factor ?? '-')}
-                        </div>
-                    </div>
-                    <div className="stat-card-compact">
-                        <div className="stat-card-label">Payoff / Expectancy</div>
-                        <div className="stat-card-value neutral">{format4(stats?.payoff_ratio ?? '-')}</div>
-                        <div style={{ fontSize: '0.6rem', marginTop: '2px', opacity: 0.6 }}>
-                            E: {format4(stats?.expectancy ?? 0)}
-                        </div>
-                    </div>
-                    <div className="stat-card-compact">
-                        <div className="stat-card-label">Recovery Factor</div>
-                        <div className="stat-card-value accent">{format4(stats?.recovery_factor ?? '-')}</div>
-                    </div>
-                    <div className="stat-card-compact">
-                        <div className="stat-card-label">Win Rate</div>
-                        <div className={`stat-card-value ${Number(stats?.win_rate ?? 0) > 50 ? 'up' : 'neutral'}`}>
-                            {format4(stats?.win_rate ?? 0)}%
-                        </div>
-                    </div>
-                    <div className="stat-card-compact">
-                        <div className="stat-card-label">Trades</div>
-                        <div className="stat-card-value accent">{format4(stats?.total_trades ?? 0)}</div>
-                    </div>
+                    <button
+                        className={`panel-tab ${centerView === 'optimize' ? 'active' : ''}`}
+                        onClick={() => setCenterView('optimize')}
+                    >
+                        篩選參數優化
+                    </button>
                 </div>
 
                 {/* Content area — BOTH views always in DOM */}
@@ -406,10 +378,21 @@ export default function UnitContent({ unitId, unit, pyodideReady }: Props) {
                             <h2 className="section-title"><BookOpen size={14} /> 核心理論</h2>
                             <div className="theory-text" ref={theoryRef} dangerouslySetInnerHTML={{ __html: unit.theory }} />
                         </div>
+
+                        {unit.exercises && (
+                            <div className="section-card" style={{ marginTop: '16px' }}>
+                                <h2 className="section-title" style={{ color: 'var(--brand-amber)' }}>💡 實戰練習</h2>
+                                <ul style={{ paddingLeft: '1.25rem', color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.8 }}>
+                                    {unit.exercises.map((e, i) => (
+                                        <li key={i} style={{ marginBottom: '6px' }}>{e}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
                     </div>
 
-                    {/* Results */}
-                    <div className={`results-scroll ${centerView === 'result' ? 'active-view' : 'hidden-view'}`}>
+                    {/* Run Results */}
+                    <div className={`results-scroll ${centerView === 'run' ? 'active-view' : 'hidden-view'}`}>
                         {stats ? (
                             <>
                                 <div className="chart-container" style={{ minHeight: '400px' }}>
@@ -503,7 +486,47 @@ export default function UnitContent({ unitId, unit, pyodideReady }: Props) {
                             <div className="empty-state">
                                 <Play size={44} />
                                 <p>尚未執行策略代碼</p>
-                                <p>點擊右側「Run」按鈕查看結果</p>
+                                <p>點擊右側「Run」按鈕查看單次回測結果</p>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Optimize Results */}
+                    <div className={`results-scroll ${centerView === 'optimize' ? 'active-view' : 'hidden-view'}`}>
+                        {scanResults.length > 0 ? (
+                            <div className="optimization-results-section" style={{ marginTop: '0' }}>
+                                <div className="trade-history-header" style={{ marginBottom: '16px' }}>
+                                    <h2 className="section-title" style={{ color: 'var(--brand-amber)' }}><Zap size={14} /> 最佳參數優化分析 (Optimization Results)</h2>
+                                </div>
+
+                                {/* Best Parameters Summary Card */}
+                                <div className="section-card" style={{ border: '1px solid var(--brand-amber-muted)', background: 'var(--brand-amber-faded)', marginBottom: '20px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                        <div style={{ fontSize: '1.5rem' }}>🏆</div>
+                                        <div>
+                                            <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'var(--brand-amber)', fontWeight: 700 }}>推薦最佳參數組合</div>
+                                            <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '2px' }}>
+                                                {Object.entries(scanResults[0]?.params || {}).map(([k, v]) => `${k}=${v}`).join(' | ')}
+                                            </div>
+                                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                                                預期總報酬率: <span style={{ color: 'var(--brand-emerald)', fontWeight: 700 }}>{format4(scanResults[0]?.total_return)}%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="chart-container" style={{ minHeight: '300px', marginBottom: '16px' }}>
+                                    <canvas id="result-opt-bar" style={{ width: '100%', height: '100%' }} />
+                                </div>
+                                <div className="chart-container" style={{ minHeight: '300px' }}>
+                                    <canvas id="result-opt-scatter" style={{ width: '100%', height: '100%' }} />
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="empty-state">
+                                <Zap size={44} />
+                                <p>尚未執行參數優化</p>
+                                <p>點擊右側「Optimize」標籤並點擊「開始暴力掃描參數」</p>
                             </div>
                         )}
                     </div>
@@ -520,36 +543,31 @@ export default function UnitContent({ unitId, unit, pyodideReady }: Props) {
                             className={`editor-tab ${rightView === 'code' ? 'active' : ''}`}
                             onClick={() => setRightView('code')}
                         >
-                            <Code2 size={12} /> Code
+                            Code
                         </button>
                         <button
                             className={`editor-tab ${rightView === 'optimize' ? 'active' : ''}`}
                             onClick={() => setRightView('optimize')}
                         >
-                            <Zap size={12} /> Optimize
+                            Optimize
                         </button>
-                        <button className="editor-tab" onClick={handleReset} title="還原預設代碼">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>
-                            Reset
+                        <button
+                            className={`editor-tab ${rightView === 'terminal' ? 'active' : ''}`}
+                            onClick={() => setRightView('terminal')}
+                        >
+                            Terminal
                         </button>
                     </div>
                     <div className="btn-group">
-                        <button
-                            className={`btn-action ${rightView === 'terminal' ? 'active-btn' : ''}`}
-                            onClick={() => setRightView('terminal')}
-                        >
-                            <Terminal size={12} /> Terminal Result
+                        <button className="btn-action" onClick={handleReset} style={{ fontSize: '0.75rem' }}>
+                            Reset
                         </button>
                         <button
                             className={`btn-action btn-execute ${isRunning ? 'active' : ''}`}
-                            disabled={isRunning}
+                            style={{ minWidth: '70px', justifyContent: 'center' }}
                             onClick={handleRun}
                         >
-                            {isRunning ? (
-                                <><Square size={11} fill="white" /> Stop</>
-                            ) : (
-                                <><Play size={12} fill="currentColor" /> Run</>
-                            )}
+                            {isRunning ? 'Stop' : 'Run'}
                         </button>
                     </div>
                 </div>
@@ -563,19 +581,32 @@ export default function UnitContent({ unitId, unit, pyodideReady }: Props) {
                                 <div className="data-source-toggle" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.65rem' }}>
                                     <span style={{ opacity: 0.8, color: 'var(--text-muted)' }}>Data:</span>
                                     <button
-                                        className={`btn-data-toggle ${dataSource === 'real' ? 'active' : ''}`}
-                                        onClick={() => setDataSource('real')}
-                                        title="使用真實股票數據 (2330)"
-                                    >
-                                        真實 (2330)
-                                    </button>
-                                    <button
                                         className={`btn-data-toggle ${dataSource === 'simulated' ? 'active' : ''}`}
-                                        onClick={() => setDataSource('simulated')}
+                                        onClick={() => { setDataSource('simulated'); setDataLoaded(false); }}
                                         title="使用虛擬隨機數據"
                                     >
-                                        虛擬
+                                        虛擬資料
                                     </button>
+                                    <button
+                                        className={`btn-data-toggle ${dataSource === 'real' ? 'active' : ''}`}
+                                        onClick={() => { setDataSource('real'); setDataLoaded(false); }}
+                                        title="使用真實股票數據 (透過 API)"
+                                    >
+                                        API
+                                    </button>
+                                    {dataSource === 'real' && (
+                                        <input
+                                            type="text"
+                                            className="symbol-input"
+                                            value={symbol}
+                                            onChange={(e) => { setSymbol(e.target.value); setDataLoaded(false); }}
+                                            placeholder="Symbol"
+                                            style={{
+                                                width: '60px', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)',
+                                                color: 'var(--text-primary)', fontSize: '0.65rem', padding: '2px 4px', borderRadius: '4px', marginLeft: '4px'
+                                            }}
+                                        />
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -613,45 +644,71 @@ export default function UnitContent({ unitId, unit, pyodideReady }: Props) {
 
                 {/* Terminal Result View */}
                 <div className={`terminal-result-view ${rightView === 'terminal' ? 'active-view' : 'hidden-view'}`}>
-                    {outputLogs.length > 0 && !isRunning && (
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
-                            <button className="btn-clear-terminal" style={{ marginTop: 0 }} onClick={() => setOutputLogs([])}>
-                                <X size={11} /> Clear
-                            </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                        <div className="brand-icon" style={{ width: 22, height: 22, fontSize: 10 }}>
+                            <Terminal size={12} />
                         </div>
-                    )}
-                    <div className="terminal-window-full">
-                        <div className="terminal-body">
-                            {outputLogs.length === 0 && (
-                                <div style={{ color: 'var(--text-dim)', opacity: 0.4, fontSize: '0.72rem' }}>
-                                    {'// 等待執行命令...'}
-                                </div>
-                            )}
-                            {outputLogs.map((log, i) => (
-                                <div key={i} className={`log-line ${log.type}`}>{log.text}</div>
-                            ))}
-                            {isRunning && <span className="blink">▋</span>}
-                        </div>
+                        <h3 className="section-title" style={{ margin: 0, fontSize: '0.85rem' }}>Execution Console</h3>
+                    </div>
+                    <div className="logs-container">
+                        {outputLogs.map((log, i) => (
+                            <div key={i} className={`log-line ${log.type}`}>{log.text}</div>
+                        ))}
+                        {isRunning && (
+                            <div className="log-line info">
+                                <span className="spinner-dots"></span> 執行中...
+                            </div>
+                        )}
                     </div>
 
-                    {unit.exercises && (
-                        <div className="section-card" style={{ marginTop: '16px' }}>
-                            <h2 className="section-title" style={{ color: 'var(--brand-amber)' }}>💡 實戰練習</h2>
-                            <ul style={{ paddingLeft: '1.25rem', color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.8 }}>
-                                {unit.exercises.map((e, i) => (
-                                    <li key={i} style={{ marginBottom: '6px' }}>{e}</li>
-                                ))}
-                            </ul>
+                    {stats && !isRunning && (
+                        <div className="stat-cards-row">
+                            <div className="stat-card-compact">
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <div className="stat-card-label">Total Returns</div>
+                                    <Zap size={14} color="var(--brand-primary)" />
+                                </div>
+                                <div className={`stat-card-value ${(stats?.total_return ?? 0) >= 0 ? 'up' : 'down'}`}>
+                                    {(stats?.total_return ?? 0) >= 0 ? '+' : ''}{format4(stats?.total_return ?? 0)}%
+                                </div>
+                            </div>
+                            <div className="stat-card-compact">
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <div className="stat-card-label">Sharpe Ratio</div>
+                                    <BarChart3 size={14} color="var(--brand-secondary)" />
+                                </div>
+                                <div className={`stat-card-value ${getStatClass(stats?.sharpe_ratio ?? 0, 'sharpe')}`}>
+                                    {format4(stats?.sharpe_ratio ?? '-')}
+                                </div>
+                            </div>
+                            <div className="stat-card-compact">
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <div className="stat-card-label">Profit Factor</div>
+                                    <Terminal size={14} color="var(--brand-emerald)" />
+                                </div>
+                                <div className={`stat-card-value ${getStatClass(stats?.profit_factor ?? 0, 'pf')}`}>
+                                    {format4(stats?.profit_factor ?? '-')}
+                                </div>
+                            </div>
+                            <div className="stat-card-compact">
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <div className="stat-card-label">Win Rate</div>
+                                    <Settings2 size={14} color="var(--brand-blue)" />
+                                </div>
+                                <div className={`stat-card-value ${Number(stats?.win_rate ?? 0) > 50 ? 'up' : 'neutral'}`}>
+                                    {format4(stats?.win_rate ?? '-')} %
+                                </div>
+                            </div>
                         </div>
                     )}
                 </div>
 
                 {/* Optimization View — REDESIGNED */}
                 <div className={`optimize-view ${rightView === 'optimize' ? 'active-view' : 'hidden-view'}`}>
-                    <div className="section-card optimize-config-panel">
+                    <div className="optimize-config-panel">
                         <div className="optimize-header-row">
-                            <h3 className="section-title"><Zap size={13} /> 參數優化掃描 (Parameter Optimization)</h3>
-                            <p className="optimize-subtitle">選擇參數並設定區間，尋找最佳績效表現</p>
+                            <h3 className="section-title">參數優化掃描</h3>
+                            <p className="optimize-subtitle">選擇並設定參數區間</p>
                         </div>
 
                         <div className="scan-config-grid">
@@ -668,20 +725,34 @@ export default function UnitContent({ unitId, unit, pyodideReady }: Props) {
                                         </label>
                                         <span className="current-val-hint">Current: {params[p.id] ?? p.default}</span>
                                     </div>
-
                                     {scanParams[p.id]?.active && (
                                         <div className="param-inputs-row">
                                             <div className="input-group">
-                                                <label>Start</label>
-                                                <input type="number" value={scanParams[p.id].start} onChange={e => setScanParams(prev => ({ ...prev, [p.id]: { ...prev[p.id], start: parseFloat(e.target.value) } }))} />
+                                                <label>Start: <span style={{ color: 'var(--text-primary)' }}>{scanParams[p.id].start}</span></label>
+                                                <input
+                                                    type="range" className="custom-slider"
+                                                    min={p.min} max={p.max} step={p.step}
+                                                    value={scanParams[p.id].start}
+                                                    onChange={e => setScanParams(prev => ({ ...prev, [p.id]: { ...prev[p.id], start: parseFloat(e.target.value) } }))}
+                                                />
                                             </div>
                                             <div className="input-group">
-                                                <label>End</label>
-                                                <input type="number" value={scanParams[p.id].end} onChange={e => setScanParams(prev => ({ ...prev, [p.id]: { ...prev[p.id], end: parseFloat(e.target.value) } }))} />
+                                                <label>End: <span style={{ color: 'var(--text-primary)' }}>{scanParams[p.id].end}</span></label>
+                                                <input
+                                                    type="range" className="custom-slider"
+                                                    min={p.min} max={p.max} step={p.step}
+                                                    value={scanParams[p.id].end}
+                                                    onChange={e => setScanParams(prev => ({ ...prev, [p.id]: { ...prev[p.id], end: parseFloat(e.target.value) } }))}
+                                                />
                                             </div>
                                             <div className="input-group">
-                                                <label>Step</label>
-                                                <input type="number" value={scanParams[p.id].step} onChange={e => setScanParams(prev => ({ ...prev, [p.id]: { ...prev[p.id], step: parseFloat(e.target.value) } }))} />
+                                                <label>Step: <span style={{ color: 'var(--text-primary)' }}>{scanParams[p.id].step}</span></label>
+                                                <input
+                                                    type="range" className="custom-slider"
+                                                    min={p.step} max={Math.max(p.step * 10, (p.max - p.min) / 2)} step={p.step}
+                                                    value={scanParams[p.id].step}
+                                                    onChange={e => setScanParams(prev => ({ ...prev, [p.id]: { ...prev[p.id], step: parseFloat(e.target.value) } }))}
+                                                />
                                             </div>
                                         </div>
                                     )}
@@ -689,60 +760,23 @@ export default function UnitContent({ unitId, unit, pyodideReady }: Props) {
                             ))}
                         </div>
 
-                        <div className="optimize-action-area">
-                            <button className="btn-execute btn-big-glow" onClick={handleOptimize} disabled={isOptimizing}>
-                                {isOptimizing ? (
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <span className="spinner-dots"></span>
-                                        計算中... ({optimizeProgress.current}/{optimizeProgress.total})
-                                    </div>
-                                ) : (
-                                    <><Zap size={14} fill="currentColor" /> 開始暴力掃描參數</>
-                                )}
+                        <div className="optimize-action-area" style={{ flexDirection: 'column', gap: '12px' }}>
+                            <button className="btn-big-glow" onClick={handleOptimize} disabled={isOptimizing} style={{ width: '100%', margin: 0 }}>
+                                {isOptimizing ? `計算中 (${optimizeProgress.current}/${optimizeProgress.total})...` : '開始暴力掃描參數'}
                             </button>
                             {isOptimizing && (
-                                <div className="optimize-progress-wrapper">
+                                <div className="optimize-progress-wrapper" style={{ width: '100%', padding: '0 4px' }}>
                                     <div className="progress-bar-bg">
                                         <div className="progress-bar-fill" style={{ width: `${(optimizeProgress.current / optimizeProgress.total) * 100}%` }} />
                                     </div>
-                                    <span className="progress-pct">{Math.round((optimizeProgress.current / optimizeProgress.total) * 100)}%</span>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px', fontSize: '0.65rem', color: 'var(--text-dim)' }}>
+                                        <span>正在分析參數組合...</span>
+                                        <span>{Math.round((optimizeProgress.current / optimizeProgress.total) * 100)}%</span>
+                                    </div>
                                 </div>
                             )}
                         </div>
                     </div>
-
-                    {scanResults.length > 0 && (
-                        <div className="section-card scan-results-area" style={{ padding: 0, overflow: 'hidden' }}>
-                            <div className="results-table-header" style={{ borderBottom: '1px solid var(--border-subtle)', background: 'var(--bg-header)', fontSize: '0.7rem' }}>
-                                🏆 優化排名 (依報酬率排序)
-                            </div>
-                            <div style={{ maxHeight: '350px', overflowY: 'auto' }}>
-                                <table className="scan-table">
-                                    <thead>
-                                        <tr>
-                                            <th>參數組合</th>
-                                            <th>報酬 %</th>
-                                            <th>風報比</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {scanResults.map((r, i) => (
-                                            <tr key={i} onClick={() => {
-                                                // Apply these params to current code and run once to refresh main charts
-                                                Object.entries(r.params).forEach(([id, val]: [string, any]) => handleParamChange(id, val.toString()));
-                                                setRightView('code');
-                                                handleRun();
-                                            }} style={{ cursor: 'pointer' }}>
-                                                <td>{Object.values(r.params).join(' / ')}</td>
-                                                <td className={r.return > 0 ? 'up' : r.return < 0 ? 'down' : ''}>{format4(r.return)}%</td>
-                                                <td>{format4(r.score)}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    )}
                 </div>
             </div>
         </div>

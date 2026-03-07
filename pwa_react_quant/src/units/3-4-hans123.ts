@@ -96,9 +96,7 @@ engine = BacktestEngine(data, initial_capital=100000)
 report = engine.run(strategy)
 
 # 輸出結果
-print(f"═══ Hans123 策略回測 ═══")
 print(f"開盤觀察數: {OPEN_BARS}")
-print(f"總報酬率: {report['total_return']:+.2f}%")
 
 chart_data = {
     **report,

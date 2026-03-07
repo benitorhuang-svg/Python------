@@ -107,10 +107,6 @@ engine = BacktestEngine(data, initial_capital=100000, slippage=0.0005)
 report = engine.run(strategy)
 
 # 輸出結果
-print(f"═══ 布林帶策略回測 ═══")
-print(f"總報酬率: {report['total_return']:+.2f}%")
-print(f"夏普比率: {report['sharpe_ratio']}")
-print(f"獲利因子: {report['profit_factor']}")
 
 chart_data = {
     **report,

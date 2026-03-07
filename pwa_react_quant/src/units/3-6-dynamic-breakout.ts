@@ -121,9 +121,7 @@ engine = BacktestEngine(data, initial_capital=100000)
 report = engine.run(strategy)
 
 # 輸出結果
-print(f"═══ 動態波幅突破策略 ═══")
 print(f"ATR 係數 K: {K_FACTOR}")
-print(f"總報酬率: {report['total_return']:+.2f}%")
 
 chart_data = {
     **report,

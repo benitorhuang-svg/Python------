@@ -118,9 +118,7 @@ engine = BacktestEngine(data, initial_capital=100000)
 report = engine.run(strategy)
 
 # 輸出結果
-print(f"═══ 反向馬丁格爾策略回測 ═══")
 print(f"最大持倉層數: {current_layer}")
-print(f"總報酬率: {report['total_return']:+.2f}%")
 
 chart_data = report
 `,

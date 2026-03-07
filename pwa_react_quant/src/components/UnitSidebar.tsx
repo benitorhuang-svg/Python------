@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { UNIT_METADATA } from '../units-registry';
-import { BookOpen, ChevronDown, ChevronRight, Layers, Moon, Sun } from 'lucide-react';
+import { BookOpen, ChevronDown, ChevronRight, Layers, Moon, Sun, Zap } from 'lucide-react';
 
 interface Props {
     activeId: string | null;
@@ -48,34 +48,35 @@ export default function UnitSidebar({ activeId, collapsed, onToggle, darkMode, o
     if (collapsed) {
         return (
             <aside className="unit-sidebar collapsed">
-                <div className="sidebar-collapsed-brand">
-                    <button className="theme-toggle primary-glow" onClick={onToggleTheme}>
-                        {darkMode ? <Sun size={14} /> : <Moon size={14} />}
-                    </button>
-                    <button className="sidebar-toggle" onClick={onToggle} title="展開導航">
-                        <BookOpen size={14} />
-                    </button>
+                <div className="sidebar-collapsed-brand" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', padding: '16px 0' }}>
+                    <div
+                        className={`theme-switch-capsule ${darkMode ? 'dark' : ''}`}
+                        onClick={onToggleTheme}
+                    >
+                        <div className="capsule-knob">
+                            {darkMode ? <Sun size={14} /> : <Moon size={14} />}
+                        </div>
+                    </div>
                 </div>
                 <div className="sidebar-collapsed-icons">
-                    {moduleKeys.map((key, i) => (
-                        <div
-                            key={key}
-                            className={`sidebar-icon-item ${key === activeModule ? 'active' : ''}`}
-                            title={key}
-                            onClick={() => {
-                                const firstUnit = moduleGroups[key][0];
-                                if (firstUnit) window.location.hash = `unit/${firstUnit.id}`;
-                            }}
-                        >
-                            <span style={{
-                                fontSize: '0.65rem',
-                                fontWeight: 700,
-                                fontFamily: "'JetBrains Mono', monospace"
-                            }}>
-                                {String(i + 1).padStart(2, '0')}
-                            </span>
-                        </div>
-                    ))}
+                    {moduleKeys.map((key, i) => {
+                        const chineseNums = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
+                        return (
+                            <div
+                                key={key}
+                                className={`sidebar-icon-item ${key === activeModule ? 'active' : ''}`}
+                                title={key}
+                                onClick={() => {
+                                    setExpanded({ [key]: true });
+                                    onToggle(); // Expand the sidebar
+                                }}
+                            >
+                                <span className="chinese-num">
+                                    {chineseNums[i] || (i + 1)}
+                                </span>
+                            </div>
+                        );
+                    })}
                 </div>
             </aside>
         );
@@ -84,16 +85,17 @@ export default function UnitSidebar({ activeId, collapsed, onToggle, darkMode, o
     return (
         <aside className="unit-sidebar">
             <div className="sidebar-brand-row">
-                <div className="nav-brand" onClick={() => (window.location.hash = 'home')}>
-                    <button className="theme-toggle primary-glow" onClick={(e) => { e.stopPropagation(); onToggleTheme?.(); }}>
-                        {darkMode ? <Sun size={13} /> : <Moon size={13} />}
-                    </button>
-                    <span className="brand-text">Quant_Lab</span>
+                <div
+                    className={`theme-switch-capsule ${darkMode ? 'dark' : ''}`}
+                    onClick={onToggleTheme}
+                    title={darkMode ? "切換至淺色模式" : "切換至深色模式"}
+                >
+                    <div className="capsule-knob">
+                        {darkMode ? <Sun size={14} /> : <Moon size={14} />}
+                    </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <button className="sidebar-toggle" onClick={onToggle} title="收合導航">
-                        <ChevronDown size={14} style={{ transform: 'rotate(90deg)' }} />
-                    </button>
+                <div className="nav-brand" onClick={() => (window.location.hash = 'home')}>
+                    <span className="brand-text">Quant_Lab</span>
                 </div>
             </div>
 
@@ -111,7 +113,6 @@ export default function UnitSidebar({ activeId, collapsed, onToggle, darkMode, o
                                 className={`tree-module-header ${isExpanded ? 'expanded' : ''}`}
                                 onClick={() => toggleModule(modName)}
                             >
-                                {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
                                 <span className="tree-module-label">
                                     {modNum && <span className="tree-mod-num">{modNum}</span>}
                                     {shortName}

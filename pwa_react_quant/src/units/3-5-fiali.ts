@@ -103,9 +103,6 @@ engine = BacktestEngine(data, initial_capital=100000)
 report = engine.run(strategy)
 
 # 輸出結果
-print(f"═══ 菲阿里四價策略 ═══")
-print(f"總報酬率: {report['total_return']:+.2f}%")
-print(f"最大回撤: {report['max_drawdown']:.2f}%")
 
 chart_data = {
     **report,

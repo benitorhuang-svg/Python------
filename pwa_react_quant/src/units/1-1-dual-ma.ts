@@ -106,13 +106,9 @@ engine = BacktestEngine(data, initial_capital=100000)
 report = engine.run(dual_ma_strategy)
 
 # ═══ 輸出結果 ═══
-print(f"═══ 雙均線策略回測結果 ═══")
 print(f"MA 參數: {SHORT_MA} / {LONG_MA}")
 print(f"初始資金: {report['initial_capital']:,.0f}")
 print(f"最終資金: {report['final_capital']:,.2f}")
-print(f"總報酬率: {report['total_return']:+.2f}%")
-print(f"最大回撤: {report['max_drawdown']:.2f}%")
-print(f"夏普比率: {report['sharpe_ratio']:.2f}")
 
 chart_data = {
     **report,

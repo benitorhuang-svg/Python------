@@ -95,9 +95,6 @@ engine = BacktestEngine(data, initial_capital=100000, slippage=0.0003)
 report = engine.run(strategy)
 
 # 輸出結果
-print(f"═══ KDJ 策略回測 ═══")
-print(f"總報酬率: {report['total_return']:+.2f}%")
-print(f"最大回撤: {report['max_drawdown']:.2f}%")
 
 chart_data = {
     **report,

@@ -91,8 +91,15 @@ const baseOpts: any = {
 
 export function renderEquityCurve(canvasId: string, data: any): void {
     destroy(canvasId);
-    const ctx = document.getElementById(canvasId) as HTMLCanvasElement | null;
+    const canvas = document.getElementById(canvasId) as HTMLCanvasElement | null;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    // Create Gradient
+    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, 'rgba(34, 211, 238, 0.3)');
+    gradient.addColorStop(1, 'rgba(34, 211, 238, 0.0)');
 
     const { equity_curve, dates, trades, initial_capital, closes } = data;
     const labels = dates.map((d: string, i: number) => i % Math.ceil(dates.length / 30) === 0 ? d : '');
@@ -118,7 +125,7 @@ export function renderEquityCurve(canvasId: string, data: any): void {
     }
 
     const datasets: any[] = [
-        { label: '策略資金', data: equity_curve, borderColor: C.cyan, backgroundColor: C.cyanA, fill: true, borderWidth: 2, pointRadius: 0, tension: 0.3 },
+        { label: '策略資金', data: equity_curve, borderColor: C.cyan, backgroundColor: gradient, fill: true, borderWidth: 2.5, pointRadius: 0, tension: 0.35 },
     ];
 
     if (benchmark) {
@@ -137,7 +144,7 @@ export function renderEquityCurve(canvasId: string, data: any): void {
         { label: '平空 ▲', data: cover, reasons: reasons, borderColor: C.blue, backgroundColor: C.blue, pointRadius: 6, pointStyle: 'triangle' as const, showLine: false }
     );
 
-    charts[canvasId] = new Chart(ctx, {
+    charts[canvasId] = new Chart(canvas, {
         type: 'line',
         data: {
             labels,
@@ -145,7 +152,7 @@ export function renderEquityCurve(canvasId: string, data: any): void {
         },
         options: {
             ...baseOpts,
-            plugins: { ...baseOpts.plugins, title: { display: true, text: '📈 資金曲線與基準對照', color: C.white, font: { family: "'Noto Sans TC'", size: 14, weight: 'bold' as const }, padding: { bottom: 16 } } }
+            plugins: { ...baseOpts.plugins, title: { display: true, text: '📈 資金曲線與基準對照 (Equity Curve)', color: C.white, font: { family: "'Noto Sans TC'", size: 14, weight: 'bold' as const }, padding: { bottom: 16 } } }
         }
     });
 }
@@ -265,13 +272,19 @@ export function renderVolumeChart(canvasId: string, data: any): void {
 
 export function renderUnderwaterChart(canvasId: string, data: any): void {
     destroy(canvasId);
-    const ctx = document.getElementById(canvasId) as HTMLCanvasElement | null;
+    const canvas = document.getElementById(canvasId) as HTMLCanvasElement | null;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     const { drawdown_series, dates } = data;
     const labels = dates.map((d: string, i: number) => i % Math.ceil(dates.length / 30) === 0 ? d : '');
 
-    charts[canvasId] = new Chart(ctx, {
+    const gradient = ctx.createLinearGradient(0, 0, 0, 200);
+    gradient.addColorStop(0, 'rgba(244, 63, 94, 0.4)');
+    gradient.addColorStop(1, 'rgba(244, 63, 94, 0.05)');
+
+    charts[canvasId] = new Chart(canvas, {
         type: 'line',
         data: {
             labels,
@@ -279,7 +292,7 @@ export function renderUnderwaterChart(canvasId: string, data: any): void {
                 label: '回撤深度 (%)',
                 data: drawdown_series.map((v: number) => -v),
                 borderColor: C.red,
-                backgroundColor: C.redA,
+                backgroundColor: gradient,
                 fill: true,
                 borderWidth: 1.5,
                 pointRadius: 0,
@@ -329,6 +342,125 @@ export function renderDistributionChart(canvasId: string, data: any): void {
             ...baseOpts,
             plugins: { ...baseOpts.plugins, title: { display: true, text: '📊 盈虧分佈 (Win/Loss Distribution)', color: C.white, font: { size: 12 } }, legend: { display: false } },
             scales: { ...baseOpts.scales, x: { ...baseOpts.scales.x, grid: { display: false } } }
+        }
+    });
+}
+
+export function renderOptimizationBarChart(canvasId: string, scanResults: any[], onClick?: (index: number) => void): void {
+    destroy(canvasId);
+    const ctx = document.getElementById(canvasId) as HTMLCanvasElement | null;
+    if (!ctx) return;
+
+    const topResults = scanResults.slice(0, 30);
+    const labels = topResults.map(r => Object.values(r.params).join(' | '));
+    const data = topResults.map(r => r.return);
+    const bgColors = data.map(d => d > 0 ? C.greenA : C.redA);
+    const borderColors = data.map(d => d > 0 ? C.green : C.red);
+
+    charts[canvasId] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                label: '總報酬率 %',
+                data: data,
+                backgroundColor: bgColors,
+                borderColor: borderColors,
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            ...baseOpts,
+            onClick: (e, elements, chart) => {
+                if (elements.length > 0 && onClick) {
+                    onClick(elements[0].index);
+                }
+            },
+            onHover: (e, elements) => {
+                if (e.native?.target) {
+                    (e.native.target as HTMLElement).style.cursor = elements.length ? 'pointer' : 'default';
+                }
+            },
+            plugins: {
+                ...baseOpts.plugins,
+                title: { display: true, text: '🏆 最佳參數組合 (Top 30 Returns)', color: C.amber, font: { family: "'Noto Sans TC', sans-serif", size: 14, weight: 'bold' as const }, padding: { bottom: 16 } },
+                legend: { display: false },
+                tooltip: {
+                    ...baseOpts.plugins.tooltip,
+                    callbacks: {
+                        afterLabel: function (context) {
+                            const r = topResults[context.dataIndex];
+                            return [
+                                `風報比 Score: ${r.score.toFixed(3)}`,
+                                `勝率 Win Rate: ${r.winRate.toFixed(1)}%`,
+                                `(點擊以套用此參數並查看詳細回測)`
+                            ];
+                        }
+                    }
+                }
+            },
+            scales: {
+                ...baseOpts.scales,
+                x: { ...baseOpts.scales.x, ticks: { ...baseOpts.scales.x.ticks, maxRotation: 45, minRotation: 45 } },
+                y: { ...baseOpts.scales.y, title: { display: true, text: '總報酬率 %', color: C.muted } }
+            }
+        }
+    });
+}
+
+export function renderOptimizationScatterChart(canvasId: string, scanResults: any[]): void {
+    destroy(canvasId);
+    const ctx = document.getElementById(canvasId) as HTMLCanvasElement | null;
+    if (!ctx) return;
+
+    const topResults = scanResults.slice(0, 150); // limit scatter points
+
+    const scatterData = topResults.map(r => ({
+        x: r.winRate || 0,
+        y: r.return,
+        _params: Object.values(r.params).join(' | '),
+        _score: r.score
+    }));
+
+    charts[canvasId] = new Chart(ctx, {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: '參數績效 (Top 150)',
+                data: scatterData,
+                backgroundColor: scatterData.map(d => d.y > 0 ? C.greenA : C.redA),
+                borderColor: scatterData.map(d => d.y > 0 ? C.green : C.red),
+                borderWidth: 1,
+                pointRadius: 5,
+                pointHoverRadius: 8
+            }]
+        },
+        options: {
+            ...baseOpts,
+            plugins: {
+                ...baseOpts.plugins,
+                title: { display: true, text: '💡 參數優化分佈 (Return vs Win Rate)', color: C.white, font: { family: "'Noto Sans TC', sans-serif", size: 14, weight: 'bold' as const }, padding: { bottom: 16 } },
+                tooltip: {
+                    ...baseOpts.plugins.tooltip,
+                    callbacks: {
+                        label: function (context: any) {
+                            const d = context.raw;
+                            return [
+                                `參數組合: ${d._params}`,
+                                `報酬率: ${d.y.toFixed(2)}%`,
+                                `勝率: ${d.x.toFixed(1)}%`,
+                                `風報比: ${d._score.toFixed(3)}`
+                            ];
+                        }
+                    }
+                }
+            },
+            scales: {
+                ...baseOpts.scales,
+                x: { ...baseOpts.scales.x, title: { display: true, text: '勝率 %', color: C.muted } },
+                y: { ...baseOpts.scales.y, title: { display: true, text: '總報酬率 %', color: C.muted } }
+            }
         }
     });
 }

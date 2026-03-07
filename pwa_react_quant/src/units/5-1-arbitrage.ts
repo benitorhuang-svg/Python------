@@ -112,8 +112,6 @@ engine = BacktestEngine(data, initial_capital=100000)
 report = engine.run(strategy)
 
 # 輸出結果
-print(f"═══ 價差套利策略回測 ═══")
-print(f"總報酬率: {report['total_return']:+.2f}%")
 
 chart_data = {
     **report,

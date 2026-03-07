@@ -137,9 +137,6 @@ engine = BacktestEngine(data, initial_capital=100000, slippage=0.0003)
 report = engine.run(donchian_strategy)
 
 # ═══ 輸出結果 ═══
-print(f"═══ 唐奇安通道專業回測 ═══")
-print(f"總報酬率: {report['total_return']:+.2f}%")
-print(f"獲利因子: {report['profit_factor']}")
 
 chart_data = {
     **report,

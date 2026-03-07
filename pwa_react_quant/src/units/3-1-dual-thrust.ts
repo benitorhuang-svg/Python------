@@ -141,10 +141,6 @@ engine = BacktestEngine(data, initial_capital=100000, slippage=0.0002)
 report = engine.run(dual_thrust_strategy)
 
 # ═══ 輸出結果 ═══
-print(f"═══ Dual Thrust 專業反手策略 ═══")
-print(f"總報酬率: {report['total_return']:+.2f}%")
-print(f"獲利因子: {report['profit_factor']}")
-print(f"卡瑪比率: {report['calmar_ratio']}")
 
 chart_data = {
     **report,

@@ -91,9 +91,6 @@ engine = BacktestEngine(data, initial_capital=100000, slippage=0.0002)
 report = engine.run(strategy)
 
 # 輸出結果
-print(f"═══ RSI 策略回測 ═══")
-print(f"總報酬率: {report['total_return']:+.2f}%")
-print(f"勝率: {report['win_rate']}%")
 
 chart_data = {
     **report,

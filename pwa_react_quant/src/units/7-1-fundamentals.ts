@@ -105,9 +105,7 @@ engine = BacktestEngine(data, initial_capital=100000)
 report = engine.run(strategy)
 
 # 輸出結果
-print(f"═══ 基本面 + 技術面複合策略 ═══")
 print(f"PE 閾值設定: {PE_THRESHOLD}")
-print(f"總報酬率: {report['total_return']:+.2f}%")
 
 # 儲存繪圖數據
 chart_data = {
