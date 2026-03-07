@@ -6,7 +6,7 @@ import type { UnitDef } from '../units/types';
 import type { StrategyStats } from '../types/backtest';
 import { getCode } from '../engine/editor';
 import { runAndGetResult, setGlobal } from '../engine/pyodide-runner';
-import { loadStockData } from '../engine/data-loader';
+import { loadStockData, generateSimulatedData } from '../engine/data-loader';
 
 interface UseBacktestOptions {
     unit: UnitDef;
@@ -39,11 +39,11 @@ export function useBacktest({
                     setOutputLogs(prev => [...prev, { text: '> 正在載入股票數據，請稍候...', type: 'info' }]);
                     const loadResult = dataSource === 'real'
                         ? await loadStockData(symbol || '2330.TW')
-                        : await import('../engine/data-loader').then(m => ({
-                            data: m.generateSimulatedData(500),
+                        : {
+                            data: generateSimulatedData(500),
                             source: 'simulated' as const,
                             symbol: '模擬股票'
-                        }));
+                        };
                     await setGlobal('stock_data', loadResult.data);
                     setDataLoaded(true);
                     setOutputLogs(prev => [...prev, { text: `> 數據載入完成: ${loadResult.symbol} (${loadResult.source})`, type: 'info' }]);

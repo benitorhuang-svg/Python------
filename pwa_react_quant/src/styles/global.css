@@ -210,6 +210,138 @@ body::after {
 }
 
 /* ═══════════════════════════
+   HOME / HERO SECTION
+   ═══════════════════════════ */
+.hero {
+    flex: 1;
+    /* Automatically expands to take remaining vertical space */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 3rem 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(34, 211, 238, 0.04) 0%, transparent 60%);
+    top: -10%;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+    animation: heroGlow 6s ease-in-out infinite alternate;
+}
+
+@keyframes heroGlow {
+    0% {
+        opacity: 0.5;
+        transform: translateX(-50%) scale(0.9);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateX(-50%) scale(1.1);
+    }
+}
+
+.hero h1 {
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.hero .highlight {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-subtitle {
+    font-size: 1.1rem !important;
+    color: var(--text-secondary) !important;
+    max-width: 650px;
+    margin: 0 auto 3rem !important;
+    line-height: 1.8;
+}
+
+.hero-stats {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 16px !important;
+    max-width: 650px !important;
+    width: 100%;
+}
+
+.hero-stat {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 24px 16px 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(12px);
+    transition: all 0.35s var(--ease-out);
+}
+
+.hero-stat::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--gradient-primary);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.hero-stat:hover::before {
+    opacity: 1;
+}
+
+.hero-stat:hover {
+    border-color: var(--border-medium);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.hero-stat-icon {
+    margin-bottom: 14px;
+    opacity: 0.8;
+}
+
+.hero-stat-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin-bottom: 4px;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-stat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+}
+
+/* ═══════════════════════════
    GLASS UTILITIES
    ═══════════════════════════ */
 .glass {
@@ -271,6 +403,8 @@ body::after {
     padding: 12px;
     gap: 8px;
     z-index: 100;
+    height: 100%;
+    overflow: hidden;
 }
 
 .sidebar-brand-row {
@@ -325,7 +459,7 @@ body::after {
 }
 
 .tree-module {
-    margin-bottom: 12px;
+    margin-bottom: 6px;
     border-radius: var(--radius-sm);
     overflow: hidden;
     background: rgba(255, 255, 255, 0.01);
@@ -335,7 +469,7 @@ body::after {
     width: 100%;
     display: flex;
     align-items: center;
-    padding: 14px 16px;
+    padding: 10px 16px;
     font-size: 0.78rem;
     font-weight: 700;
     color: var(--text-dim);

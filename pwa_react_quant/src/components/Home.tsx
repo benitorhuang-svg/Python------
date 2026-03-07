@@ -4,23 +4,7 @@ export default function Home() {
     return (
         <section className="hero">
             <div className="hero-content fade-in" style={{ position: 'relative', zIndex: 1 }}>
-                <div style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '6px 16px',
-                    background: 'rgba(34, 211, 238, 0.04)',
-                    border: '1px solid rgba(34, 211, 238, 0.12)',
-                    borderRadius: 'var(--radius-full)',
-                    color: 'var(--brand-primary)',
-                    fontSize: '0.78rem',
-                    fontWeight: 600,
-                    marginBottom: '2.5rem',
-                    backdropFilter: 'blur(10px)',
-                    letterSpacing: '0.02em'
-                }}>
-                    <Zap size={12} fill="currentColor" /> 全前端 Python 量化實驗室
-                </div>
+
 
                 <h1>
                     基於 PWA 技術的 <span className="highlight">量化實戰</span>

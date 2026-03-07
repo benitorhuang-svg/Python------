@@ -12,7 +12,7 @@ import {
     renderOptimizationBarChart, renderOptimizationScatterChart
 } from '../engine/chart-renderer';
 import { setGlobal } from '../engine/pyodide-runner';
-import { loadStockData } from '../engine/data-loader';
+import { loadStockData, generateSimulatedData } from '../engine/data-loader';
 import { Copy } from 'lucide-react';
 import { escapeRegex } from './unit/utils';
 
@@ -112,17 +112,16 @@ export default function UnitContent({ unitId, unit, pyodideReady, onRunStart }: 
             setDataLoaded(false);
             const loadPromise = dataSource === 'real'
                 ? loadStockData('2330')
-                : import('../engine/data-loader').then(m => ({
-                    data: m.generateSimulatedData(500),
+                : Promise.resolve({
+                    data: generateSimulatedData(500),
                     source: 'simulated' as const,
                     symbol: '模擬股票'
-                }));
+                });
 
             loadPromise.then(async result => {
                 await setGlobal('stock_data', result.data);
                 setDataLoaded(true);
             }).catch(async () => {
-                const { generateSimulatedData } = await import('../engine/data-loader');
                 const simData = generateSimulatedData(500);
                 await setGlobal('stock_data', simData);
                 setDataLoaded(true);

@@ -17,5 +17,23 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api\/yahoo/, ''),
       }
     }
+  },
+  build: {
+    chunkSizeWarningLimit: 800,
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          if (id.includes('node_modules/chart.js')) {
+            return 'chartjs';
+          }
+          if (id.includes('node_modules/codemirror') || id.includes('node_modules/@codemirror')) {
+            return 'codemirror';
+          }
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
+        }
+      }
+    }
   }
 })
