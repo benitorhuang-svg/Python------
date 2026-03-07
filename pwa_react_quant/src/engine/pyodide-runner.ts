@@ -9,6 +9,8 @@ export interface RunResult {
     error?: string;
 }
 
+import PyodideWorker from './pyodide-worker?worker';
+
 let worker: Worker | null = null;
 let ready = false;
 const readyCallbacks: (() => void)[] = [];
@@ -19,9 +21,8 @@ export async function initPyodide(onProgress?: (msg: string) => void): Promise<v
     if (worker) return;
 
     onProgress?.('正在啟動後台線程...');
-    // 使用 URL 來加載 worker，避免 Vite 編譯問題
-    const workerUrl = new URL('./pyodide-worker.ts', import.meta.url);
-    worker = new Worker(workerUrl, { type: 'module' });
+
+    worker = new PyodideWorker();
 
     worker.onmessage = (e) => {
         const { type, ...payload } = e.data;
