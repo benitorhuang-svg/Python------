@@ -29,8 +29,7 @@ export default function Home() {
                 </h1>
 
                 <p className="hero-subtitle">
-                    無需配置任何伺服器與本地環境。透過 WebAssembly 直接驅動 Python 運算核心，
-                    <br />
+                    無需配置任何伺服器與本地環境。透過 WebAssembly 直接驅動 <span style={{ whiteSpace: 'nowrap' }}>Python 運算核心</span>，
                     學習理論、動態調整參數，並即時體驗專業級的回測視覺化數據分析。
                 </p>
 
@@ -67,18 +66,6 @@ export default function Home() {
                     alignItems: 'center',
                     gap: '16px'
                 }}>
-                    <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        color: 'var(--text-muted)',
-                        fontWeight: 500,
-                        fontSize: '0.88rem',
-                        letterSpacing: '0.01em'
-                    }}>
-                        從左側選單選擇課程開始
-                        <ArrowRight size={14} style={{ color: 'var(--brand-primary)' }} />
-                    </div>
                     <a
                         href="https://github.com/benitorhuang-svg"
                         target="_blank"
