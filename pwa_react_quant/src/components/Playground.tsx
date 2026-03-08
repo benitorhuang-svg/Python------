@@ -56,7 +56,7 @@ def strategy(engine, data, i):
         if (curr_macd < 0 and prev_macd >= 0) or (curr_rsi > 70):
             engine.sell(closes[i], i, "MACD死叉或RSI超賣")
 
-// ══ 執行全量回測 ══
+# ══ 執行全量回測 ══
 engine = BacktestEngine(stock_data, initial_capital=1000000)
 report = engine.run(strategy)
 report
